@@ -12,3 +12,9 @@ Nas regras léxicas e sintáticas descritas abaixo os caracteres.
 <li>Colchetes indicam opcionalidade: '[ a ]' significa um a opcional, ou seja, "a | ε" (ε refere-se à cadeia vazia);</li>
 <li>Chaves indicam repetição: '{ a }' significa " ε | a | aa | aaa | ...";</li>
 <li>Parênteses indicam ocorrência de uma das alternativas: '(a | b | c)' significa obrigatoriedade de escolha de a ou b ou c.</li>
+
+
+# AFD 
+Afim de inicar o projeto foi criado o AFD abaixo:
+
+![COMPILA](https://github.com/user-attachments/assets/3adc5945-364f-463a-9204-23b49a77823f)
