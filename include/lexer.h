@@ -1,5 +1,5 @@
-#ifndef ANALEX_H
-#define ANALEX_H
+#ifndef LEXER_H
+#define LEXER_H
 #include <stdio.h>
 
 #define MAX_LEXEMA 100

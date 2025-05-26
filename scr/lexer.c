@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#include "analex.h"
+#include "lexer.h"
 
 int line_number = 1;  // Contador de linhas
 

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "analex.h"
+#include "lexer.h"
 
 const char* tokenTypeToString(TokenType type) {
     switch (type) {
