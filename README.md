@@ -18,3 +18,28 @@ Nas regras léxicas e sintáticas descritas abaixo os caracteres.
 Afim de inicar o projeto foi criado o AFD abaixo:
 
 ![COMPILA](https://github.com/user-attachments/assets/3adc5945-364f-463a-9204-23b49a77823f)
+
+
+# Como rodar o projeto?
+
+<ul>
+  <li>Faça o git clone do projeto;</li>
+  <li>Na sua IDE de preferência, navegue ate a pasta;
+
+```sh
+cshort_lexer
+```
+  </li>
+  <li>Rode o comando;
+    
+```sh
+gcc main.c lexer.c -o cshort_lexer
+```
+</li>
+  <li>Rode o comando ./cshort_lexer  </li>
+      
+```sh
+./cshort_lexer
+```
+  <li> Após isso sera exibido no console da sua IDE a análise léxica. </li>
+</ul>
