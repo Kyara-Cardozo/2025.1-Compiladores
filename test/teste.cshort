@@ -1,4 +1,0 @@
-int x = 42;
-char c = '\n';
-string s = "texto";
-if (x == 42) { return 0; }
