@@ -15,7 +15,7 @@ Nas regras léxicas e sintáticas descritas abaixo os caracteres.
 
 
 # AFD 
-Afim de inicar o projeto foi criado o AFD abaixo:
+Afim de inicar o projeto foi criado o AFD abaixo
 
 ![COMPILA](https://github.com/user-attachments/assets/3adc5945-364f-463a-9204-23b49a77823f)
 
