@@ -22,7 +22,7 @@ const char* tokenToStr(TokenType type) {
         case TOKEN_MAIS: return "MAIS";
         case TOKEN_MENOS: return "MINUS";
         case TOKEN_MUL: return "MULTIPLICACAO";
-        case TOKEN_DIV: return "DIV";
+        case TOKEN_DIV: return "DIVISAO";
         case TOKEN_IGUAL: return "IGUAL";
         case TOKEN_IGUALDADE: return "IGUALDADE";
         case TOKEN_NE: return "NEGACAO";
