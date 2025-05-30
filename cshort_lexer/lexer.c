@@ -98,26 +98,37 @@ Token getNextToken() {
         return makeToken(TOKEN_STRING, buffer);
     }
 
-    // Comentário /* ... */
+    // Comentários
     if (currentChar == '/') {
+    advance();
+    if (currentChar == '*') {
+        // Comentário de bloco: /* ... */
         advance();
-        if (currentChar == '*') {
-            advance();
-            while (currentChar != EOF) {
-                if (currentChar == '*') {
+        while (currentChar != EOF) {
+            if (currentChar == '*') {
+                advance();
+                if (currentChar == '/') {
                     advance();
-                    if (currentChar == '/') {
-                        advance();
-                        return makeToken(TOKEN_COMMENT, "/*...*/");
-                    }
-                } else {
-                    advance();
+                    return makeToken(TOKEN_COMMENT, "Comentario em bloco"); 
                 }
+            } else {
+                advance();
             }
-        } else {
-            return makeToken(TOKEN_DIV, "/");
         }
+        // Comentário de bloco não fechado
+        return makeToken(TOKEN_INVALID, "Comentário de bloco não fechado");
+    } else if (currentChar == '/') {
+        // Comentário de linha: // ...
+        advance();
+        while (currentChar != '\n' && currentChar != EOF) {
+            advance();
+        }
+        return makeToken(TOKEN_COMMENT, "Comentario de linha"); 
+    } else {
+        return makeToken(TOKEN_DIV, "/");
     }
+}
+
 
     // Operadores e delimitadores
     char ch = currentChar;

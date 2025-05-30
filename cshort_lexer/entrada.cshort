@@ -4,7 +4,25 @@
     return;
 }*/
 
-a=5
+/* a=5
 b =7
 soma= a+ b
-multi10 = soma * 10
+multi10 = soma * 10*/
+
+
+int main() {
+    int x = 10;
+    float y = 5.14;
+    char c = '\0';
+    string s = "Olá, mundo!";
+    
+    if (x > 5 && y < 4.0) {
+        x = x + 1;
+    }
+
+    // Comentário de linha
+    /*
+        Comentário de bloco
+    */
+    return 0;
+}
