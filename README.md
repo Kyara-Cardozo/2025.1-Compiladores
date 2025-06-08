@@ -17,7 +17,7 @@ Nas regras léxicas e sintáticas descritas abaixo os caracteres.
 # AFD 
 Afim de inicar o projeto foi criado o AFD abaixo
 
-![COMPILA](https://github.com/user-attachments/assets/3adc5945-364f-463a-9204-23b49a77823f)
+![afd](https://github.com/user-attachments/assets/f4a869c8-7ffb-4e15-96d4-e3b5958a0bbd)
 
 
 # Como rodar o projeto?
@@ -30,6 +30,7 @@ Afim de inicar o projeto foi criado o AFD abaixo
 cshort_lexer
 ```
   </li>
+
   <li>Rode o comando;
     
 ```sh
@@ -43,3 +44,11 @@ gcc main.c lexer.c -o cshort_lexer
 ```
   <li> Após isso sera exibido no console da sua IDE a análise léxica. </li>
 </ul>
+
+# Observação:
+Caso queria alterar o teste basta editar o arquivo entrada.cshort.
+Primeiro rode o comando  
+```sh
+clear
+```
+no terminal, e depois rode os outros dois comando já citados aqui. 

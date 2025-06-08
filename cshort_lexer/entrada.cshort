@@ -1,28 +1,3 @@
-/* int main() {
-    int x = 5;
-    float y = 3.14;
-    return;
-}*/
-
-/* a=5
-b =7
-soma= a+ b
-multi10 = soma * 10*/
-
-
-int main() {
-    int x = 10;
-    float y = 5.14;
-    char c = '\0';
-    string s = "Olá, mundo!";
-    
-    if (x > 5 && y < 4.0) {
-        x = x + 1;
-    }
-
-    // Comentário de linha
-    /*
-        Comentário de bloco
-    */
-    return 0;
-}
+x = (2 + 3) * 7 / 3 - (4 + 5)
+y = x * 3
+z = 8 * ((6+4)/2) - (7 + (1*1))
