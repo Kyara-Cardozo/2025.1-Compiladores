@@ -19,8 +19,8 @@ const char* tokenToStr(TokenType type) {
         case TOKEN_INT_T: return "INT_T";
         case TOKEN_FLOAT_T: return "FLOAT_T";
         case TOKEN_BOOL_T: return "BOOL_T";
-        case TOKEN_MAIS: return "MAIS";
-        case TOKEN_MENOS: return "MINUS";
+        case TOKEN_MAIS: return "SOMA";
+        case TOKEN_MENOS: return "MENOS";
         case TOKEN_MUL: return "MULTIPLICACAO";
         case TOKEN_DIV: return "DIVISAO";
         case TOKEN_IGUAL: return "IGUAL";

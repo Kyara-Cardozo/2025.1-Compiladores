@@ -3,22 +3,32 @@
 #include <ctype.h>
 #include <string.h>
 
+// fonte de entrada e controle de posição
+
 static FILE *source;
 static int currentChar;
 static int currentLine = 1;
 
-void initLexer(FILE *sourceFile) {
+void initLexer(FILE *sourceFile)
+{
     source = sourceFile;
     currentChar = fgetc(source);
     currentLine = 1;
 }
 
-static void advance() {
+// avança para o próximo caractere na entrada
+
+static void advance()
+{
     currentChar = fgetc(source);
-    if (currentChar == '\n') currentLine++;
+    if (currentChar == '\n')
+        currentLine++;
 }
 
-static Token makeToken(TokenType type, const char *lexeme) {
+// cria e retorna um token com tipo, lexema e linha atual
+
+static Token makeToken(TokenType type, const char *lexeme)
+{
     Token token;
     token.type = type;
     strncpy(token.lexeme, lexeme, sizeof(token.lexeme));
@@ -26,47 +36,78 @@ static Token makeToken(TokenType type, const char *lexeme) {
     return token;
 }
 
-Token getNextToken() {
-    while (isspace(currentChar)) advance();
+// função principal do analisador léxico: reconhece e retorna o próximo token
+Token getNextToken()
+{
+    // ignora espaços em branco
+    while (isspace(currentChar))
+        advance();
 
+    // fim de arquivo
     if (currentChar == EOF)
         return makeToken(TOKEN_EOF, "EOF");
 
-    if (isalpha(currentChar) || currentChar == '_') {
+    // identificadores e palavras-chave
+    if (isalpha(currentChar) || currentChar == '_')
+    {
         char buffer[256] = {0};
         int i = 0;
-        do {
+
+        // constrói o lexema
+        do
+        {
             buffer[i++] = currentChar;
             advance();
         } while (isalnum(currentChar) || currentChar == '_');
-        
+
         // Palavras-chave
-        if (strcmp(buffer, "if") == 0) return makeToken(TOKEN_IF, buffer);
-        if (strcmp(buffer, "else") == 0) return makeToken(TOKEN_ELSE, buffer);
-        if (strcmp(buffer, "while") == 0) return makeToken(TOKEN_WHILE, buffer);
-        if (strcmp(buffer, "for") == 0) return makeToken(TOKEN_FOR, buffer);
-        if (strcmp(buffer, "return") == 0) return makeToken(TOKEN_RETURN, buffer);
-        if (strcmp(buffer, "void") == 0) return makeToken(TOKEN_VOID, buffer);
-        if (strcmp(buffer, "char") == 0) return makeToken(TOKEN_CHAR_T, buffer);
-        if (strcmp(buffer, "int") == 0) return makeToken(TOKEN_INT_T, buffer);
-        if (strcmp(buffer, "float") == 0) return makeToken(TOKEN_FLOAT_T, buffer);
-        if (strcmp(buffer, "bool") == 0) return makeToken(TOKEN_BOOL_T, buffer);
-        
+        if (strcmp(buffer, "if") == 0)
+            return makeToken(TOKEN_IF, buffer);
+        if (strcmp(buffer, "else") == 0)
+            return makeToken(TOKEN_ELSE, buffer);
+        if (strcmp(buffer, "while") == 0)
+            return makeToken(TOKEN_WHILE, buffer);
+        if (strcmp(buffer, "for") == 0)
+            return makeToken(TOKEN_FOR, buffer);
+        if (strcmp(buffer, "return") == 0)
+            return makeToken(TOKEN_RETURN, buffer);
+        if (strcmp(buffer, "void") == 0)
+            return makeToken(TOKEN_VOID, buffer);
+        if (strcmp(buffer, "char") == 0)
+            return makeToken(TOKEN_CHAR_T, buffer);
+        if (strcmp(buffer, "int") == 0)
+            return makeToken(TOKEN_INT_T, buffer);
+        if (strcmp(buffer, "float") == 0)
+            return makeToken(TOKEN_FLOAT_T, buffer);
+        if (strcmp(buffer, "bool") == 0)
+            return makeToken(TOKEN_BOOL_T, buffer);
+
         return makeToken(TOKEN_ID, buffer);
     }
 
-    if (isdigit(currentChar)) {
+    // constantes numéricas: int ou real
+    if (isdigit(currentChar))
+    {
         char buffer[256] = {0};
         int i = 0;
-        do {
+        do
+        {
             buffer[i++] = currentChar;
             advance();
         } while (isdigit(currentChar));
 
-        if (currentChar == '.') {
+        if (currentChar == '.')
+        {
             buffer[i++] = currentChar;
             advance();
-            while (isdigit(currentChar)) {
+
+            // real inválido (ex: 123.)
+            if (!isdigit(currentChar))
+            {
+                return makeToken(TOKEN_INVALID, "real incompleto");
+            }
+            while (isdigit(currentChar))
+            {
                 buffer[i++] = currentChar;
                 advance();
             }
@@ -76,83 +117,198 @@ Token getNextToken() {
         return makeToken(TOKEN_INT, buffer);
     }
 
-    if (currentChar == '\'') {
-        char buffer[4] = {0};
-        advance(); buffer[0] = currentChar;
+    // constantes de caractere (char)
+    if (currentChar == '\'')
+    {
+        char buffer[4] = {0}; // pode conter até: \n + '\0'
         advance();
-        if (currentChar == '\'') {
+
+        if (currentChar == '\\')
+        { // começo de escape: '\'
+            buffer[0] = '\\';
+            advance();
+
+            if (currentChar == 'n' || currentChar == '0' || currentChar == 't' || currentChar == '\\' || currentChar == '\'' || currentChar == '"')
+            {
+                buffer[1] = currentChar;
+                advance();
+            }
+            else
+            {
+                return makeToken(TOKEN_INVALID, "escape inválido em char");
+            }
+        }
+        // caractere normal (ex: 'a')
+        else if (isprint(currentChar) && currentChar != '\'' && currentChar != '\\')
+        {
+            buffer[0] = currentChar;
+            advance();
+        }
+        else
+        {
+            return makeToken(TOKEN_INVALID, "caractere inválido");
+        }
+
+        // fecha aspas simples
+        if (currentChar == '\'')
+        {
             advance();
             return makeToken(TOKEN_CHAR, buffer);
         }
+        else
+        {
+            return makeToken(TOKEN_INVALID, "char mal formado");
+        }
     }
 
-    if (currentChar == '"') {
+    // constantes de string (ex: "abc")
+    if (currentChar == '"')
+    {
         char buffer[256] = {0};
         int i = 0;
-        advance();
-        while (currentChar != '"' && currentChar != EOF) {
-            buffer[i++] = currentChar;
+        advance(); // avança após o primeiro "
+
+        while (currentChar != '"' && currentChar != EOF)
+        {
+            if (currentChar == '\n')
+            {
+                return makeToken(TOKEN_INVALID, "string com quebra de linha");
+            }
+
+            if (currentChar == '\\')
+            {
+                buffer[i++] = '\\';
+                advance();
+
+                if (currentChar == 'n' || currentChar == 't' || currentChar == '\\' ||
+                    currentChar == '"' || currentChar == '0')
+                {
+                    buffer[i++] = currentChar;
+                }
+                else
+                {
+                    return makeToken(TOKEN_INVALID, "escape inválido em string");
+                }
+            }
+            else if (currentChar == '"')
+            {
+                return makeToken(TOKEN_INVALID, "aspas não escapada dentro de string");
+            }
+            else
+            {
+                buffer[i++] = currentChar;
+            }
+
             advance();
         }
-        advance();
-        return makeToken(TOKEN_STRING, buffer);
+
+        if (currentChar == '"')
+        {
+            advance(); // fecha string
+            return makeToken(TOKEN_STRING, buffer);
+        }
+        else
+        {
+            return makeToken(TOKEN_INVALID, "string mal formada (não fechada)");
+        }
     }
 
     // Comentários
-    if (currentChar == '/') {
-    advance();
-    if (currentChar == '*') {
-        // Comentário de bloco: /* ... */
+    if (currentChar == '/')
+    {
         advance();
-        while (currentChar != EOF) {
-            if (currentChar == '*') {
-                advance();
-                if (currentChar == '/') {
+        if (currentChar == '*')
+        {
+            // Comentário de bloco: /* ... */
+            advance();
+            while (currentChar != EOF)
+            {
+                if (currentChar == '*')
+                {
                     advance();
-                    return makeToken(TOKEN_COMMENT, "Comentario em bloco"); 
+                    if (currentChar == '/')
+                    {
+                        advance();
+                        return makeToken(TOKEN_COMMENT, "Comentario em bloco");
+                    }
                 }
-            } else {
+                else
+                {
+                    advance();
+                }
+            }
+            // Comentário de bloco não fechado
+            return makeToken(TOKEN_INVALID, "Comentário de bloco não fechado");
+        }
+        else if (currentChar == '/')
+        {
+            // Comentário de linha: // ...
+            advance();
+            while (currentChar != '\n' && currentChar != EOF)
+            {
                 advance();
             }
+            return makeToken(TOKEN_COMMENT, "Comentario de linha");
         }
-        // Comentário de bloco não fechado
-        return makeToken(TOKEN_INVALID, "Comentário de bloco não fechado");
-    } else if (currentChar == '/') {
-        // Comentário de linha: // ...
-        advance();
-        while (currentChar != '\n' && currentChar != EOF) {
-            advance();
+        else
+        {
+            return makeToken(TOKEN_DIV, "/");
         }
-        return makeToken(TOKEN_COMMENT, "Comentario de linha"); 
-    } else {
-        return makeToken(TOKEN_DIV, "/");
     }
-}
-
 
     // Operadores e delimitadores
     char ch = currentChar;
     advance();
 
-    switch (ch) {
-        case '+': return makeToken(TOKEN_MAIS, "+");
-        case '-': return makeToken(TOKEN_MENOS, "-");
-        case '*': return makeToken(TOKEN_MUL, "*");
-        case '=': return (currentChar == '=' ? (advance(), makeToken(TOKEN_IGUALDADE, "==")) : makeToken(TOKEN_IGUAL, "="));
-        case '!': return (currentChar == '=' ? (advance(), makeToken(TOKEN_NE, "!=")) : makeToken(TOKEN_NOT, "!"));
-        case '<': return (currentChar == '=' ? (advance(), makeToken(TOKEN_MAIORouIGUAL, "<=")) : makeToken(TOKEN_MAIORQUE, "<"));
-        case '>': return (currentChar == '=' ? (advance(), makeToken(TOKEN_MENORouIGUAL, ">=")) : makeToken(TOKEN_MENORQUE, ">"));
-        case '&': if (currentChar == '&') { advance(); return makeToken(TOKEN_AND, "&&"); }
-        case '|': if (currentChar == '|') { advance(); return makeToken(TOKEN_OR, "||"); }
-        case ';': return makeToken(TOKEN_PONTOVIRGULA, ";");
-        case ',': return makeToken(TOKEN_VIRGULA, ",");
-        case '(': return makeToken(TOKEN_ABREPAR, "(");
-        case ')': return makeToken(TOKEN_FECHAPAR, ")");
-        case '[': return makeToken(TOKEN_ABRECOL, "[");
-        case ']': return makeToken(TOKEN_FECHACOL, "]");
-        case '{': return makeToken(TOKEN_ABRECHAVE, "{");
-        case '}': return makeToken(TOKEN_FECHACHAVE, "}");
+    switch (ch)
+    {
+    case '+':
+        return makeToken(TOKEN_MAIS, "+");
+    case '-':
+        return makeToken(TOKEN_MENOS, "-");
+    case '*':
+        return makeToken(TOKEN_MUL, "*");
+    case '=':
+        return (currentChar == '=' ? (advance(), makeToken(TOKEN_IGUALDADE, "==")) : makeToken(TOKEN_IGUAL, "="));
+    case '!':
+        return (currentChar == '=' ? (advance(), makeToken(TOKEN_NE, "!=")) : makeToken(TOKEN_NOT, "!"));
+    case '<':
+        return (currentChar == '=' ? (advance(), makeToken(TOKEN_MENORouIGUAL, "<=")) : makeToken(TOKEN_MENORQUE, "<"));
+    case '>':
+        return (currentChar == '=' ? (advance(), makeToken(TOKEN_MAIORouIGUAL, ">=")) : makeToken(TOKEN_MAIORQUE, ">"));
+
+    case '&':
+        if (currentChar == '&')
+        {
+            advance();
+            return makeToken(TOKEN_AND, "&&");
+        }
+        break;
+    case '|':
+        if (currentChar == '|')
+        {
+            advance();
+            return makeToken(TOKEN_OR, "||");
+        }
+        break;
+    case ';':
+        return makeToken(TOKEN_PONTOVIRGULA, ";");
+    case ',':
+        return makeToken(TOKEN_VIRGULA, ",");
+    case '(':
+        return makeToken(TOKEN_ABREPAR, "(");
+    case ')':
+        return makeToken(TOKEN_FECHAPAR, ")");
+    case '[':
+        return makeToken(TOKEN_ABRECOL, "[");
+    case ']':
+        return makeToken(TOKEN_FECHACOL, "]");
+    case '{':
+        return makeToken(TOKEN_ABRECHAVE, "{");
+    case '}':
+        return makeToken(TOKEN_FECHACHAVE, "}");
     }
 
+    // qualquer outro caractere é inválido
     return makeToken(TOKEN_INVALID, "?");
 }
