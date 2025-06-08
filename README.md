@@ -44,3 +44,11 @@ gcc main.c lexer.c -o cshort_lexer
 ```
   <li> Após isso sera exibido no console da sua IDE a análise léxica. </li>
 </ul>
+
+# Observação:
+Caso queria alterar o teste basta editar o arquivo entrada.cshort.
+Primeiro rode o comando  
+```sh
+clear
+```
+no terminal, e depois rode os outros dois comando já citados aqui. 
