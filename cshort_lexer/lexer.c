@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include <string.h>
 
+// fonte de entrada e controle de posição
+
 static FILE *source;
 static int currentChar;
 static int currentLine = 1;
@@ -14,12 +16,16 @@ void initLexer(FILE *sourceFile)
     currentLine = 1;
 }
 
+// avança para o próximo caractere na entrada
+
 static void advance()
 {
     currentChar = fgetc(source);
     if (currentChar == '\n')
         currentLine++;
 }
+
+// cria e retorna um token com tipo, lexema e linha atual
 
 static Token makeToken(TokenType type, const char *lexeme)
 {
@@ -30,18 +36,24 @@ static Token makeToken(TokenType type, const char *lexeme)
     return token;
 }
 
+// função principal do analisador léxico: reconhece e retorna o próximo token
 Token getNextToken()
 {
+    // ignora espaços em branco
     while (isspace(currentChar))
         advance();
 
+    // fim de arquivo
     if (currentChar == EOF)
         return makeToken(TOKEN_EOF, "EOF");
 
+    // identificadores e palavras-chave
     if (isalpha(currentChar) || currentChar == '_')
     {
         char buffer[256] = {0};
         int i = 0;
+
+        // constrói o lexema
         do
         {
             buffer[i++] = currentChar;
@@ -73,6 +85,7 @@ Token getNextToken()
         return makeToken(TOKEN_ID, buffer);
     }
 
+    // constantes numéricas: int ou real
     if (isdigit(currentChar))
     {
         char buffer[256] = {0};
@@ -87,6 +100,8 @@ Token getNextToken()
         {
             buffer[i++] = currentChar;
             advance();
+
+            // real inválido (ex: 123.)
             if (!isdigit(currentChar))
             {
                 return makeToken(TOKEN_INVALID, "real incompleto");
@@ -102,6 +117,7 @@ Token getNextToken()
         return makeToken(TOKEN_INT, buffer);
     }
 
+    // constantes de caractere (char)
     if (currentChar == '\'')
     {
         char buffer[4] = {0}; // pode conter até: \n + '\0'
@@ -122,6 +138,7 @@ Token getNextToken()
                 return makeToken(TOKEN_INVALID, "escape inválido em char");
             }
         }
+        // caractere normal (ex: 'a')
         else if (isprint(currentChar) && currentChar != '\'' && currentChar != '\\')
         {
             buffer[0] = currentChar;
@@ -132,6 +149,7 @@ Token getNextToken()
             return makeToken(TOKEN_INVALID, "caractere inválido");
         }
 
+        // fecha aspas simples
         if (currentChar == '\'')
         {
             advance();
@@ -143,18 +161,14 @@ Token getNextToken()
         }
     }
 
+    // constantes de string (ex: "abc")
     if (currentChar == '"')
     {
         char buffer[256] = {0};
         int i = 0;
-        advance();
+        advance(); // avança após o primeiro "
+
         while (currentChar != '"' && currentChar != EOF)
-        {
-            buffer[i++] = currentChar;
-            advance();
-        }
-        advance();
-        return makeToken(TOKEN_STRING, buffer);
         {
             if (currentChar == '\n')
             {
@@ -163,10 +177,11 @@ Token getNextToken()
 
             if (currentChar == '\\')
             {
-                buffer[i++] = currentChar;
+                buffer[i++] = '\\';
                 advance();
-                if (currentChar == 'n' || currentChar == 't' || currentChar == '"' ||
-                    currentChar == '\\' || currentChar == '0')
+
+                if (currentChar == 'n' || currentChar == 't' || currentChar == '\\' ||
+                    currentChar == '"' || currentChar == '0')
                 {
                     buffer[i++] = currentChar;
                 }
@@ -177,66 +192,24 @@ Token getNextToken()
             }
             else if (currentChar == '"')
             {
-                return makeToken(TOKEN_INVALID, "aspas não escapada em string");
+                return makeToken(TOKEN_INVALID, "aspas não escapada dentro de string");
             }
             else
             {
                 buffer[i++] = currentChar;
             }
+
             advance();
         }
 
         if (currentChar == '"')
         {
-            char buffer[256] = {0};
-            int i = 0;
-            advance(); // avança após o primeiro "
-
-            while (currentChar != '"' && currentChar != EOF)
-            {
-                if (currentChar == '\n')
-                {
-                    return makeToken(TOKEN_INVALID, "string com quebra de linha");
-                }
-
-                if (currentChar == '\\')
-                { // início de escape
-                    buffer[i++] = '\\';
-                    advance();
-
-                    // permite escapes válidos
-                    if (currentChar == 'n' || currentChar == 't' || currentChar == '\\' ||
-                        currentChar == '"' || currentChar == '0')
-                    {
-                        buffer[i++] = currentChar;
-                    }
-                    else
-                    {
-                        return makeToken(TOKEN_INVALID, "escape inválido em string");
-                    }
-                }
-                else if (currentChar == '"')
-                {
-                    // aspas não escapada (seria fim da string)
-                    return makeToken(TOKEN_INVALID, "aspas não escapada dentro de string");
-                }
-                else
-                {
-                    buffer[i++] = currentChar;
-                }
-
-                advance();
-            }
-
-            if (currentChar == '"')
-            {
-                advance(); // fecha string
-                return makeToken(TOKEN_STRING, buffer);
-            }
-            else
-            {
-                return makeToken(TOKEN_INVALID, "string mal formada (não fechada)");
-            }
+            advance(); // fecha string
+            return makeToken(TOKEN_STRING, buffer);
+        }
+        else
+        {
+            return makeToken(TOKEN_INVALID, "string mal formada (não fechada)");
         }
     }
 
@@ -310,12 +283,14 @@ Token getNextToken()
             advance();
             return makeToken(TOKEN_AND, "&&");
         }
+        break;
     case '|':
         if (currentChar == '|')
         {
             advance();
             return makeToken(TOKEN_OR, "||");
         }
+        break;
     case ';':
         return makeToken(TOKEN_PONTOVIRGULA, ";");
     case ',':
@@ -334,5 +309,6 @@ Token getNextToken()
         return makeToken(TOKEN_FECHACHAVE, "}");
     }
 
+    // qualquer outro caractere é inválido
     return makeToken(TOKEN_INVALID, "?");
 }
