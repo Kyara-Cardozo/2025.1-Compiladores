@@ -17,7 +17,7 @@ Nas regras léxicas e sintáticas descritas abaixo os caracteres.
 # AFD 
 Afim de inicar o projeto foi criado o AFD abaixo
 
-![COMPILA](https://github.com/user-attachments/assets/3adc5945-364f-463a-9204-23b49a77823f)
+![afd](https://github.com/user-attachments/assets/f4a869c8-7ffb-4e15-96d4-e3b5958a0bbd)
 
 
 # Como rodar o projeto?
@@ -30,6 +30,7 @@ Afim de inicar o projeto foi criado o AFD abaixo
 cshort_lexer
 ```
   </li>
+
   <li>Rode o comando;
     
 ```sh
