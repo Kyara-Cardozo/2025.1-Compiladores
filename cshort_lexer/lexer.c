@@ -40,6 +40,7 @@ static Token makeToken(TokenType type, const char *lexeme)
 Token getNextToken()
 {
     // ignora espaços em branco
+    // Estado q0: estado inicial (ignora espaços)
     while (isspace(currentChar))
         advance();
 
@@ -47,6 +48,7 @@ Token getNextToken()
     if (currentChar == EOF)
         return makeToken(TOKEN_EOF, "EOF");
 
+    // Estado q1 → q10: identificadores e palavras-chave
     // identificadores e palavras-chave
     if (isalpha(currentChar) || currentChar == '_')
     {
@@ -62,30 +64,31 @@ Token getNextToken()
 
         // Palavras-chave
         if (strcmp(buffer, "if") == 0)
-            return makeToken(TOKEN_IF, buffer);
+            return makeToken(IF, buffer);
         if (strcmp(buffer, "else") == 0)
-            return makeToken(TOKEN_ELSE, buffer);
+            return makeToken(ELSE, buffer);
         if (strcmp(buffer, "while") == 0)
-            return makeToken(TOKEN_WHILE, buffer);
+            return makeToken(WHILE, buffer);
         if (strcmp(buffer, "for") == 0)
-            return makeToken(TOKEN_FOR, buffer);
+            return makeToken(FOR, buffer);
         if (strcmp(buffer, "return") == 0)
-            return makeToken(TOKEN_RETURN, buffer);
+            return makeToken(RETURN, buffer);
         if (strcmp(buffer, "void") == 0)
-            return makeToken(TOKEN_VOID, buffer);
+            return makeToken(VOID, buffer);
         if (strcmp(buffer, "char") == 0)
-            return makeToken(TOKEN_CHAR_T, buffer);
+            return makeToken(CHAR_T, buffer);
         if (strcmp(buffer, "int") == 0)
-            return makeToken(TOKEN_INT_T, buffer);
+            return makeToken(INT_T, buffer);
         if (strcmp(buffer, "float") == 0)
-            return makeToken(TOKEN_FLOAT_T, buffer);
+            return makeToken(FLOAT_T, buffer);
         if (strcmp(buffer, "bool") == 0)
-            return makeToken(TOKEN_BOOL_T, buffer);
+            return makeToken(BOOL_T, buffer);
 
-        return makeToken(TOKEN_ID, buffer);
+        return makeToken(ID, buffer);
     }
 
     // constantes numéricas: int ou real
+     // Estado q2 → q11 (inteiro), q12 (real)
     if (isdigit(currentChar))
     {
         char buffer[256] = {0};
@@ -104,20 +107,21 @@ Token getNextToken()
             // real inválido (ex: 123.)
             if (!isdigit(currentChar))
             {
-                return makeToken(TOKEN_INVALID, "real incompleto");
+                return makeToken(INVALID, "real incompleto");
             }
             while (isdigit(currentChar))
             {
                 buffer[i++] = currentChar;
                 advance();
             }
-            return makeToken(TOKEN_REAL, buffer);
+            return makeToken(REAL, buffer);
         }
 
-        return makeToken(TOKEN_INT, buffer);
+        return makeToken(INT, buffer);
     }
 
     // constantes de caractere (char)
+    // Estado q3 → q13 (char simples), q35 (com escape), q36 (erro)
     if (currentChar == '\'')
     {
         char buffer[4] = {0}; // pode conter até: \n + '\0'
@@ -135,7 +139,7 @@ Token getNextToken()
             }
             else
             {
-                return makeToken(TOKEN_INVALID, "escape inválido em char");
+                return makeToken(INVALID, "escape inválido em char");
             }
         }
         // caractere normal (ex: 'a')
@@ -146,22 +150,23 @@ Token getNextToken()
         }
         else
         {
-            return makeToken(TOKEN_INVALID, "caractere inválido");
+            return makeToken(INVALID, "caractere inválido");
         }
 
         // fecha aspas simples
         if (currentChar == '\'')
         {
             advance();
-            return makeToken(TOKEN_CHAR, buffer);
+            return makeToken(CHAR, buffer);
         }
         else
         {
-            return makeToken(TOKEN_INVALID, "char mal formado");
+            return makeToken(INVALID, "char mal formado");
         }
     }
 
     // constantes de string (ex: "abc")
+    // Estado q4 → q5 (string) ou q6 (erro: não fechada)
     if (currentChar == '"')
     {
         char buffer[256] = {0};
@@ -172,7 +177,7 @@ Token getNextToken()
         {
             if (currentChar == '\n')
             {
-                return makeToken(TOKEN_INVALID, "string com quebra de linha");
+                return makeToken(INVALID, "string com quebra de linha");
             }
 
             if (currentChar == '\\')
@@ -187,12 +192,12 @@ Token getNextToken()
                 }
                 else
                 {
-                    return makeToken(TOKEN_INVALID, "escape inválido em string");
+                    return makeToken(INVALID, "escape inválido em string");
                 }
             }
             else if (currentChar == '"')
             {
-                return makeToken(TOKEN_INVALID, "aspas não escapada dentro de string");
+                return makeToken(INVALID, "aspas não escapada dentro de string");
             }
             else
             {
@@ -205,20 +210,22 @@ Token getNextToken()
         if (currentChar == '"')
         {
             advance(); // fecha string
-            return makeToken(TOKEN_STRING, buffer);
+            return makeToken(STRING, buffer);
         }
         else
         {
-            return makeToken(TOKEN_INVALID, "string mal formada (não fechada)");
+            return makeToken(INVALID, "string mal formada (não fechada)");
         }
     }
 
     // Comentários
+    // Estado q8 → q16 (comentário de bloco), q17 (erro), ou comentário de linha
     if (currentChar == '/')
     {
         advance();
         if (currentChar == '*')
         {
+             // Estado q16: comentário de bloco
             // Comentário de bloco: /* ... */
             advance();
             while (currentChar != EOF)
@@ -229,7 +236,7 @@ Token getNextToken()
                     if (currentChar == '/')
                     {
                         advance();
-                        return makeToken(TOKEN_COMMENT, "Comentario em bloco");
+                        return makeToken(COMMENT, "Comentario em bloco");
                     }
                 }
                 else
@@ -238,7 +245,7 @@ Token getNextToken()
                 }
             }
             // Comentário de bloco não fechado
-            return makeToken(TOKEN_INVALID, "Comentário de bloco não fechado");
+            return makeToken(INVALID, "Comentário de bloco não fechado");
         }
         else if (currentChar == '/')
         {
@@ -248,11 +255,11 @@ Token getNextToken()
             {
                 advance();
             }
-            return makeToken(TOKEN_COMMENT, "Comentario de linha");
+            return makeToken(COMMENT, "Comentario de linha");
         }
         else
         {
-            return makeToken(TOKEN_DIV, "/");
+            return makeToken(DIV, "/");
         }
     }
 
@@ -263,52 +270,55 @@ Token getNextToken()
     switch (ch)
     {
     case '+':
-        return makeToken(TOKEN_MAIS, "+");
+        return makeToken(MAIS, "+");
     case '-':
-        return makeToken(TOKEN_MENOS, "-");
+        return makeToken(MENOS, "-");
     case '*':
-        return makeToken(TOKEN_MUL, "*");
+        return makeToken(MUL, "*");
+    // Estado q39: operadores compostos  
     case '=':
-        return (currentChar == '=' ? (advance(), makeToken(TOKEN_IGUALDADE, "==")) : makeToken(TOKEN_IGUAL, "="));
+        return (currentChar == '=' ? (advance(), makeToken(IGUALDADE, "==")) : makeToken(IGUAL, "="));
     case '!':
-        return (currentChar == '=' ? (advance(), makeToken(TOKEN_NE, "!=")) : makeToken(TOKEN_NOT, "!"));
+        return (currentChar == '=' ? (advance(), makeToken(NEGACAO, "!=")) : makeToken(NOT, "!"));
     case '<':
-        return (currentChar == '=' ? (advance(), makeToken(TOKEN_MENORouIGUAL, "<=")) : makeToken(TOKEN_MENORQUE, "<"));
+        return (currentChar == '=' ? (advance(), makeToken(MENORouIGUAL, "<=")) : makeToken(MENORQUE, "<"));
     case '>':
-        return (currentChar == '=' ? (advance(), makeToken(TOKEN_MAIORouIGUAL, ">=")) : makeToken(TOKEN_MAIORQUE, ">"));
+        return (currentChar == '=' ? (advance(), makeToken(MAIORouIGUAL, ">=")) : makeToken(MAIORQUE, ">"));
 
     case '&':
         if (currentChar == '&')
         {
             advance();
-            return makeToken(TOKEN_AND, "&&");
+            return makeToken(AND, "&&");
         }
         break;
     case '|':
         if (currentChar == '|')
         {
             advance();
-            return makeToken(TOKEN_OR, "||");
+            return makeToken(OR, "||");
         }
         break;
+    // Estado q7: delimitadores
     case ';':
-        return makeToken(TOKEN_PONTOVIRGULA, ";");
+        return makeToken(PONTOVIRGULA, ";");
     case ',':
-        return makeToken(TOKEN_VIRGULA, ",");
+        return makeToken(VIRGULA, ",");
     case '(':
-        return makeToken(TOKEN_ABREPAR, "(");
+        return makeToken(ABREPARENTESE, "(");
     case ')':
-        return makeToken(TOKEN_FECHAPAR, ")");
+        return makeToken(FECHAPARENTESE, ")");
     case '[':
-        return makeToken(TOKEN_ABRECOL, "[");
+        return makeToken(ABRECOLCHETE, "[");
     case ']':
-        return makeToken(TOKEN_FECHACOL, "]");
+        return makeToken(FECHACOLCHETE, "]");
     case '{':
-        return makeToken(TOKEN_ABRECHAVE, "{");
+        return makeToken(ABRECHAVE, "{");
     case '}':
-        return makeToken(TOKEN_FECHACHAVE, "}");
+        return makeToken(FECHACHAVE, "}");
     }
 
     // qualquer outro caractere é inválido
-    return makeToken(TOKEN_INVALID, "?");
+    // Estado q17: erro léxico (qualquer caractere inválido)
+    return makeToken(INVALID, "?");
 }

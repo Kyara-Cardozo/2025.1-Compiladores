@@ -5,55 +5,55 @@
 // Enumeração de todos os tipos de tokens reconhecidos pelo analisador léxico
 typedef enum {
     // Identificadores e constantes
-    TOKEN_ID,        // identificador: variável, nome de função, etc.
-    TOKEN_INT,       // constante inteira
-    TOKEN_REAL,      // constante real (ponto flutuante)
-    TOKEN_CHAR,      // constante de caractere
-    TOKEN_STRING,    // constante de string
+    ID,        // identificador: variável, nome de função, etc.
+    INT,       // constante inteira
+    REAL,      // constante real (ponto flutuante)
+    CHAR,      // constante de caractere
+    STRING,    // constante de string
 
     // Palavras-chave da linguagem
-    TOKEN_IF,
-    TOKEN_ELSE,
-    TOKEN_WHILE,
-    TOKEN_FOR,
-    TOKEN_RETURN,
-    TOKEN_VOID,
-    TOKEN_CHAR_T,
-    TOKEN_INT_T,
-    TOKEN_FLOAT_T,
-    TOKEN_BOOL_T,
+    IF,
+    ELSE,
+    WHILE,
+    FOR,
+    RETURN,
+    VOID,
+    CHAR_T,
+    INT_T,
+    FLOAT_T,
+    BOOL_T,
 
     // Operadores aritméticos, relacionais e lógicos
-    TOKEN_MAIS,      // +
-    TOKEN_MENOS,     // -
-    TOKEN_MUL,       // *
-    TOKEN_DIV,       // /
-    TOKEN_IGUAL,    // =
-    TOKEN_IGUALDADE,        // ==
-    TOKEN_NE,        // !=
-    TOKEN_MAIORQUE,        // <
-    TOKEN_MENORQUE,        // >
-    TOKEN_MAIORouIGUAL,        // <=
-    TOKEN_MENORouIGUAL,        // >=
-    TOKEN_AND,       // &&
-    TOKEN_OR,        // ||
-    TOKEN_NOT,       // !
+    MAIS,      // +
+    MENOS,     // -
+    MUL,       // *
+    DIV,       // /
+    IGUAL,    // =
+    IGUALDADE,        // ==
+    NEGACAO,        // !=
+    MAIORQUE,        // <
+    MENORQUE,        // >
+    MAIORouIGUAL,        // <=
+    MENORouIGUAL,        // >=
+    AND,       // &&
+    OR,        // ||
+    NOT,       // !
 
     // Delimitadores
-    TOKEN_ABREPAR,    // (
-    TOKEN_FECHAPAR,    // )
-    TOKEN_ABRECOL,  // [
-    TOKEN_FECHACOL,  // ]
-    TOKEN_ABRECHAVE,    // {
-    TOKEN_FECHACHAVE,    // }
-    TOKEN_PONTOVIRGULA,      // ;
-    TOKEN_VIRGULA,     // ,
+    ABREPARENTESE,    // (
+    FECHAPARENTESE,    // )
+    ABRECOLCHETE,  // [
+    FECHACOLCHETE,  // ]
+    ABRECHAVE,    // {
+    FECHACHAVE,    // }
+    PONTOVIRGULA,      // ;
+    VIRGULA,     // ,
 
     // Comentário
-    TOKEN_COMMENT,   // /* ... */
+    COMMENT,   // /* ... */
 
     // Erro léxico ou fim de arquivo
-    TOKEN_INVALID,
+    INVALID,
     TOKEN_EOF
 } TokenType;
 
