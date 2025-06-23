@@ -34,7 +34,7 @@ cshort_lexer
   <li>Rode o comando;
     
 ```sh
-gcc main.c lexer.c -o cshort_lexer
+gcc main.c lexer.c parser.c symtab.c -o cshort_lexer
 ```
 </li>
   <li>Rode o comando ./cshort_lexer  </li>

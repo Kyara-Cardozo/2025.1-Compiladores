@@ -9,12 +9,28 @@ static FILE *source;
 static int currentChar;
 static int currentLine = 1;
 
+// Tokens globais para o parser (Lookahead)
+Token t;
+Token tLookahead;
+
+
 void initLexer(FILE *sourceFile)
 {
     source = sourceFile;
     currentChar = fgetc(source);
     currentLine = 1;
 }
+
+void initParserTokens() {
+    t = getNextToken();
+    tLookahead = getNextToken();
+}
+
+void advanceToken() {
+    t = tLookahead;
+    tLookahead = getNextToken();
+}
+
 
 // avança para o próximo caractere na entrada
 

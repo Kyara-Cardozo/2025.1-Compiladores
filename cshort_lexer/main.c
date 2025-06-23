@@ -1,6 +1,7 @@
 // main.c
 #include <stdio.h>
 #include "lexer.h"
+#include "parser.h"
 
 const char* tokenToStr(TokenType type) {
     switch (type) {
@@ -56,11 +57,9 @@ int main() {
     }
 
     initLexer(file);
-    Token token;
-    do {
-        token = getNextToken();
-        printf("[Linha %d] Token: %-15s Lexema: %s\n", token.line, tokenToStr(token.type), token.lexeme);
-    } while (token.type != TOKEN_EOF);
+
+    
+    parseProgram();
 
     fclose(file);
     return 0;

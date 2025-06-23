@@ -11,4 +11,13 @@ void initLexer(FILE *sourceFile);
 // Retorna o próximo token do arquivo
 Token getNextToken(void);
 
+extern Token t;
+extern Token tLookahead;
+
+void initParserTokens();
+void advanceToken();
+
+const char* tokenToStr(TokenType type);
+
+
 #endif
