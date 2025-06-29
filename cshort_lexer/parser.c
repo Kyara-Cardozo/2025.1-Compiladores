@@ -140,8 +140,35 @@ static DeclKind decl()
         insertSymbol(nome, SYMBOL_VAR);
         return DECL_VAR;
     }
+    else if (t.type == VIRGULA)
+    {
+         insertSymbol(nome, SYMBOL_VAR); 
+        do
+        {
+            advanceToken(); // Avança para o próximo identificador
+            if (t.type != ID)
+            {
+                printf("Erro de sintaxe na linha %d: identificador esperado após ','.\n", t.line);
+                exit(1);
+            }
+            insertSymbol(t.lexeme, SYMBOL_VAR);
+            advanceToken();
+        } while (t.type == VIRGULA);
+
+        if (t.type == PONTOVIRGULA)
+        {
+            return DECL_VAR;
+        }
+        else
+        {
+            printf("Erro de sintaxe na linha %d: esperado ';' após declaração de variável.\n", t.line);
+            exit(1);
+        }
+    }
     else
     {
+        printf("aqui else");
+        printf("aqui2 else:%d \n", t.type);
         printf("Erro de sintaxe na linha %d: esperado '(' ou ';' após identificador.\n", t.line);
         exit(1);
     }
@@ -152,32 +179,37 @@ void parseProgram()
 {
     initParserTokens();
 
-    DeclKind tipoDecl = decl();
-
-    if (tipoDecl == DECL_VAR || tipoDecl == DECL_PROT)
+    while (t.type != TOKEN_EOF)
     {
-        match(PONTOVIRGULA);
-    }
-    else if (tipoDecl == DECL_PROT_UNICO)
-    {
-        if (t.type == PONTOVIRGULA)
+        DeclKind tipoDecl = decl();
+        if (tipoDecl == DECL_VAR || tipoDecl == DECL_PROT)
         {
             match(PONTOVIRGULA);
         }
-        else if (t.type == ABRECHAVE)
+        else if (tipoDecl == DECL_PROT_UNICO)
         {
-            parseBloco();
-        }
-        else
-        {
-            printf("Erro de sintaxe na linha %d: esperado '{' ou ';' após cabeçalho da função.\n", t.line);
-            exit(1);
+            if (t.type == PONTOVIRGULA)
+            {
+                match(PONTOVIRGULA);
+            }
+            else if (t.type == ABRECHAVE)
+            {
+                parseBloco();
+            }
+            else
+            {
+                printf("Erro de sintaxe na linha %d: esperado '{' ou ';' após cabeçalho da função.\n", t.line);
+                exit(1);
+            }
         }
     }
 
     if (t.type != TOKEN_EOF)
     {
         printf("Erro de sintaxe: conteúdo inesperado após o fim do programa (linha %d).\n", t.line);
+        printf("token encontrado  para t %d \n", t.type);
+        printf("token encontrado  para tLookahead %d \n", tLookahead.type);
+
         exit(1);
     }
 
