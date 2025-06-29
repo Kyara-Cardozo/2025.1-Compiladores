@@ -46,6 +46,23 @@ static void parseTipo()
     }
 }
 
+// <tipo> ::= int | float | char | bool 
+static void parseTipoSemVoid()
+{
+    if (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T ||
+        t.type == BOOL_T )
+    {
+        advanceToken();
+    }
+    else
+    {
+        printf("Erro de sintaxe na linha %d: tipo de parametro, encontrado '%s'\n",
+               t.line, t.lexeme);
+        exit(1);
+    }
+}
+
+
 // <expressao> ::= INT | ID
 static void parseExpressao()
 {
@@ -116,6 +133,12 @@ static DeclKind decl()
     if (t.type == ABREPARENTESE)
     {
         advanceToken();
+        //     printf("reconhece tipo param %d", t.type);
+        // if (t.type == INT_T)
+        //  printf("reconhece tipo param");
+        parseTipoSemVoid();
+        insertSymbol(nome, SYMBOL_VAR);
+        exit(0);
         match(FECHAPARENTESE);
 
         if (t.type == ABRECHAVE)
@@ -142,7 +165,7 @@ static DeclKind decl()
     }
     else if (t.type == VIRGULA)
     {
-         insertSymbol(nome, SYMBOL_VAR); 
+        insertSymbol(nome, SYMBOL_VAR);
         do
         {
             advanceToken(); // Avança para o próximo identificador
