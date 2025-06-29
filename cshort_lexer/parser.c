@@ -46,11 +46,11 @@ static void parseTipo()
     }
 }
 
-// <tipo> ::= int | float | char | bool 
+// <tipo> ::= int | float | char | bool
 static void parseTipoSemVoid()
 {
     if (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T ||
-        t.type == BOOL_T )
+        t.type == BOOL_T)
     {
         advanceToken();
     }
@@ -61,7 +61,6 @@ static void parseTipoSemVoid()
         exit(1);
     }
 }
-
 
 // <expressao> ::= INT | ID
 static void parseExpressao()
@@ -133,16 +132,16 @@ static DeclKind decl()
     if (t.type == ABREPARENTESE)
     {
         advanceToken();
-        //     printf("reconhece tipo param %d", t.type);
-        // if (t.type == INT_T)
-        //  printf("reconhece tipo param");
         parseTipoSemVoid();
+        // to do reconhecer parametros para funcao
+
         insertSymbol(nome, SYMBOL_VAR);
         exit(0);
         match(FECHAPARENTESE);
 
         if (t.type == ABRECHAVE)
-        { // Agora t já aponta pro próximo
+        // to do reconhecer conteudo dentro da funcao 
+        { // t já aponta pro próximo
             insertSymbol(nome, SYMBOL_FUNC);
             return DECL_PROT_UNICO; // Indica definição
         }
