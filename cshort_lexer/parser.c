@@ -146,7 +146,7 @@ static DeclKind decl()
 
     if (t.type == ABREPARENTESE)
     {
-        insertSymbol(nome, SYMBOL_FUNC, t.type);
+        insertSymbol(nome, SYMBOL_FUNC);
 
         advanceToken();
 
@@ -162,10 +162,21 @@ static DeclKind decl()
                     exit(1);
                 }
 
-                insertSymbol(t.lexeme, SYMBOL_PARAM, t.type);
+                insertSymbol(t.lexeme, SYMBOL_PARAM);
                 advanceToken();
 
-            } while (t.type == VIRGULA); // Continua enquanto houver mais parâmetros
+                if (t.type == VIRGULA) // Se houver uma vírgula, avança para o próximo parâmetro
+                {
+                    advanceToken();
+                    //TODO: precisamos validar o cenário int func(int x, )
+                }
+                else if (t.type != FECHAPARENTESE) // Se não for vírgula ou fechamento de parêntese, é um erro
+                {
+                    printf("Erro de sintaxe na linha %d: esperado ',' ou ')' após parâmetro.\n", t.line);
+                    exit(1);
+                }
+
+            } while (t.type != FECHAPARENTESE); // Continua até encontrar o fechamento do parêntese
         }
 
         match(FECHAPARENTESE);
@@ -186,12 +197,12 @@ static DeclKind decl()
     }
     else if (t.type == PONTOVIRGULA) // Caso seja uma variável
     {
-        insertSymbol(nome, SYMBOL_VAR, t.type);
+        insertSymbol(nome, SYMBOL_VAR);
         return DECL_VAR;
     }
     else if (t.type == VIRGULA) // Caso seja uma lista de variáveis
     {
-        insertSymbol(nome, SYMBOL_VAR, t.type);
+        insertSymbol(nome, SYMBOL_VAR);
         do
         {
             advanceToken();
@@ -200,7 +211,7 @@ static DeclKind decl()
                 printf("Erro de sintaxe na linha %d: identificador esperado após ','.\n", t.line);
                 exit(1);
             }
-            insertSymbol(t.lexeme, SYMBOL_VAR, t.type);
+            insertSymbol(t.lexeme, SYMBOL_VAR);
             advanceToken();
         } while (t.type == VIRGULA);
 
@@ -220,6 +231,9 @@ static DeclKind decl()
         exit(1);
     }
 }
+
+
+
 
 // <prog> ::= <decl> ;
 void parseProgram()
