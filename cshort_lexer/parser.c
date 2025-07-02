@@ -56,7 +56,7 @@ static void parseTipoSemVoid()
     }
     else
     {
-        printf("Erro de sintaxe na linha %d: tipo de parametro, encontrado '%s'\n",
+        printf("Erro de sintaxe na linha %d: o tipo de parametro '%s' é inválido\n",
                t.line, t.lexeme);
         exit(1);
     }
@@ -114,6 +114,18 @@ static void parseBloco()
     match(FECHACHAVE);
 }
 
+// < tipos_param> ::= <tipo> ID ( parametros );
+static void reconheceParametro()
+{
+    if (t.type != ID) {
+        printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
+        exit(1);
+    }
+
+    advanceToken();
+    return;
+}
+
 // <decl> ::= <tipo> ID ( ) | <tipo> ID ;
 static DeclKind decl()
 {
@@ -133,14 +145,16 @@ static DeclKind decl()
     {
         advanceToken();
         parseTipoSemVoid();
-        // to do reconhecer parametros para funcao
 
-        insertSymbol(nome, SYMBOL_VAR);
-        exit(0);
+        reconheceParametro();
+
+        // insertSymbol(nome, SYMBOL_VAR);
+
+        // exit(0);
         match(FECHAPARENTESE);
 
         if (t.type == ABRECHAVE)
-        // to do reconhecer conteudo dentro da funcao 
+        // to do reconhecer conteudo dentro da funcao
         { // t já aponta pro próximo
             insertSymbol(nome, SYMBOL_FUNC);
             return DECL_PROT_UNICO; // Indica definição
