@@ -1,0 +1,4 @@
+float somador(int x, int w);
+
+float soma(int x, int w) {
+}
