@@ -54,6 +54,7 @@ int main() {
     // char fileName[200] = "entrada_variaveis.cshort";
     // char fileName[200] = "entrada.cshort";
     char fileName[200] = "entrada_declvar.cshort";
+    
 
 
     FILE *file = fopen(fileName, "r");

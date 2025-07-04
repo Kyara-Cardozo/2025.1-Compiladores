@@ -62,6 +62,22 @@ static void parseTipoSemVoid()
     }
 }
 
+// <op_rel> ::= == | != | <= | < | => | >
+static void parseOpRel()
+{
+    if (t.type == IGUALDADE || t.type == NEGACAO || t.type == MENORouIGUAL || t.type == MENORQUE ||
+        t.type == MAIORouIGUAL || t.type == MAIORQUE)
+    {
+        advanceToken();
+    }
+    else
+    {
+        printf("Erro de sintaxe na linha %d: o operador '%s' é inválido\n",
+               t.line, t.lexeme);
+        exit(1);
+    }
+}
+
 // <expressao> ::= INT | ID
 static void parseExpressao()
 {
