@@ -50,7 +50,12 @@ const char* tokenToStr(TokenType type) {
 }
 
 int main() {
-    FILE *file = fopen("entrada.cshort", "r");
+    // char fileName[200] = "entrada_funcoes.cshort";
+    // char fileName[200] = "entrada_variaveis.cshort";
+    char fileName[200] = "entrada.cshort";
+
+
+    FILE *file = fopen(fileName, "r");
     if (!file) {
         perror("Erro ao abrir arquivo");
         return 1;
