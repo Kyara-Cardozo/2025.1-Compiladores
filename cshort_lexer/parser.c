@@ -114,7 +114,6 @@ static void parseBloco()
     match(FECHACHAVE);
 }
 
-
 // < tipos_param> ::= <tipo> ID ( parametros );
 // static void reconheceParametro(const char* nome)
 // {
@@ -168,7 +167,7 @@ static DeclKind decl()
                 if (t.type == VIRGULA) // Se houver uma vírgula, avança para o próximo parâmetro
                 {
                     advanceToken();
-                    //TODO: precisamos validar o cenário int func(int x, )
+                    // TODO: precisamos validar o cenário int func(int x, )
                 }
                 else if (t.type != FECHAPARENTESE) // Se não for vírgula ou fechamento de parêntese, é um erro
                 {
@@ -194,6 +193,23 @@ static DeclKind decl()
             printf("Erro de sintaxe na linha %d: esperado '{' ou ';' após cabeçalho da função.\n", t.line);
             exit(1);
         }
+    }
+    else if (t.type == ABRECOLCHETE)
+    {
+        advanceToken();
+        if (t.type != INT)
+        {
+            printf("Erro de sintaxe na linha %d: esperado constante inteira.\n");
+            exit(0);
+        }
+        insertSymbol(nome, SYMBOL_VAR);
+        advanceToken();
+        if (t.type != FECHACOLCHETE)
+        {
+            printf("Erro de sintaxe na linha %d: esperado ']'.\n");
+            exit(0);
+        }
+        advanceToken();
     }
     else if (t.type == PONTOVIRGULA) // Caso seja uma variável
     {
@@ -231,9 +247,6 @@ static DeclKind decl()
         exit(1);
     }
 }
-
-
-
 
 // <prog> ::= <decl> ;
 void parseProgram()
