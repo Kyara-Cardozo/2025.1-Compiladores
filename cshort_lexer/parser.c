@@ -6,6 +6,8 @@
 #include "lexer.h"
 #include "symtab.h"
 
+void static parseExpr();
+
 // Enum para representar o tipo de declaração
 typedef enum
 {
@@ -191,7 +193,6 @@ static void parseFator()
     }
 }
 
-// to do
 // <termo> ::= fator {(* | / | &&) fator};
 static void parseTermo()
 {
@@ -205,7 +206,6 @@ static void parseTermo()
     exit(1);
 }
 
-// to do
 // <expreSimp> ::= [+ | – ] termo {(+ | – | ||) termo};
 static void parseExprSimp()
 {
@@ -224,7 +224,6 @@ static void parseExprSimp()
     exit(1);
 }
 
-// to do
 // <expre> ::= expr_simp [ op_rel expr_simp ];
 static void parseExpr()
 {
@@ -244,7 +243,6 @@ static void parseExpr()
 }
 
 // <atrib> ::= id [ '[' expr ']' ] = expr
-// to do
 
 static void parseAtrib()
 {
@@ -387,11 +385,9 @@ static void parseCmd()
 
 // <decl> ::= <tipo> ID ( ) | <tipo> ID ;
 static DeclKind decl()
-{
+{  
     char nome[256];
     strcpy(nome, t.lexeme);
-
-    parseTipo();
 
     if (t.type != ID)
     {
@@ -458,14 +454,14 @@ static DeclKind decl()
         advanceToken();
         if (t.type != INT)
         {
-            printf("Erro de sintaxe na linha %d: esperado constante inteira.\n");
+            printf("Erro de sintaxe na linha %d: esperado constante inteira.\n", t.line);
             exit(0);
         }
         insertSymbol(nome, SYMBOL_VAR);
         advanceToken();
         if (t.type != FECHACOLCHETE)
         {
-            printf("Erro de sintaxe na linha %d: esperado ']'.\n");
+            printf("Erro de sintaxe na linha %d: esperado ']'.\n", t.line);
             exit(0);
         }
         advanceToken();
@@ -507,42 +503,125 @@ static DeclKind decl()
     }
 }
 
-// <prog> ::= <decl> ;
+static void parseFunc()
+{
+    // func = tipo id '(' tipos_param ')' '{' { tipo decl_var { ',' decl_var } ';' } { cmd } '}'
+
+    // Processa o identificador da função
+    if (t.type != ID)
+    {
+        printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
+        exit(1);
+    }
+
+    char nomeFunc[256];
+    strcpy(nomeFunc, t.lexeme);
+    insertSymbol(nomeFunc, SYMBOL_FUNC); // Insere a função na tabela de símbolos
+    advanceToken();
+
+    // Processa os parâmetros da função
+    match(ABREPARENTESE); // '('
+    if (t.type != FECHAPARENTESE) // Verifica se há parâmetros
+    {
+        do
+        {
+            parseTipoSemVoid(); // Processa o tipo do parâmetro
+
+            if (t.type != ID)
+            {
+                printf("Erro de sintaxe na linha %d: identificador esperado após tipo do parâmetro.\n", t.line);
+                exit(1);
+            }
+            insertSymbol(t.lexeme, SYMBOL_PARAM); // Insere o parâmetro na tabela de símbolos
+            advanceToken();
+
+            if (t.type == VIRGULA) // ',' indica mais parâmetros
+            {
+                advanceToken();
+            }
+            else if (t.type != FECHAPARENTESE) // Erro se não for ',' ou ')'
+            {
+                printf("Erro de sintaxe na linha %d: esperado ',' ou ')' após parâmetro.\n", t.line);
+                exit(1);
+            }
+        } while (t.type != FECHAPARENTESE);
+    }
+    match(FECHAPARENTESE); // ')'
+
+    // Processa o corpo da função
+    match(ABRECHAVE); // '{'
+
+    // Processa declarações de variáveis locais
+    while (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T)
+    {
+        parseTipo(); // Processa o tipo da variável
+
+        do
+        {
+            if (t.type != ID)
+            {
+                printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
+                exit(1);
+            }
+            insertSymbol(t.lexeme, SYMBOL_VAR); // Insere a variável na tabela de símbolos
+            advanceToken();
+
+            if (t.type == VIRGULA) // ',' indica mais variáveis
+            {
+                advanceToken();
+            }
+            else if (t.type != PONTOVIRGULA) // Erro se não for ',' ou ';'
+            {
+                printf("Erro de sintaxe na linha %d: esperado ',' ou ';' após declaração de variável.\n", t.line);
+                exit(1);
+            }
+        } while (t.type == VIRGULA);
+
+        match(PONTOVIRGULA); // ';'
+    }
+
+    // Processa comandos
+    while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
+    {
+        parseCmd(); // Processa cada comando
+    }
+
+    match(FECHACHAVE); // '}'
+}
+
+// <prog> ::= {decl ';' | func}
 void parseProgram()
 {
     initParserTokens();
 
     while (t.type != TOKEN_EOF)
     {
-        DeclKind tipoDecl = decl();
-        if (tipoDecl == DECL_VAR || tipoDecl == DECL_PROT)
+        if (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T || t.type == VOID)
         {
-            match(PONTOVIRGULA);
-        }
-        else if (tipoDecl == DECL_PROT_UNICO)
-        {
-            if (t.type == PONTOVIRGULA)
+            // Verifica se é uma declaração ou uma função
+            advanceToken();
+            if (tLookahead.type == ABREPARENTESE)
             {
-                match(PONTOVIRGULA);
-            }
-            else if (t.type == ABRECHAVE)
-            {
-                parseBloco();
+                // É uma função
+                parseFunc();
             }
             else
             {
-                printf("Erro de sintaxe na linha %d: esperado '{' ou ';' após cabeçalho da função.\n", t.line);
-                exit(1);
+                // É uma declaração
+                DeclKind tipoDecl = decl();
+                match(PONTOVIRGULA);
             }
+        }
+        else
+        {
+            printf("Erro de sintaxe na linha %d: esperado tipo ou fim do arquivo.\n", t.line);
+            exit(1);
         }
     }
 
     if (t.type != TOKEN_EOF)
     {
         printf("Erro de sintaxe: conteúdo inesperado após o fim do programa (linha %d).\n", t.line);
-        printf("token encontrado  para t %d \n", t.type);
-        printf("token encontrado  para tLookahead %d \n", tLookahead.type);
-
         exit(1);
     }
 
