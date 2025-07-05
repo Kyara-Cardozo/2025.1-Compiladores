@@ -272,6 +272,7 @@ static void parseCmd()
 {
     if (t.type == IF)
     {
+        // if '(' expr ')' cmd [ else cmd ]
         advanceToken();
         match(ABREPARENTESE);
         parseExpr();
@@ -286,6 +287,7 @@ static void parseCmd()
     }
     else if (t.type == WHILE)
     {
+        // while '(' expr ')' cmd
         advanceToken();
         match(ABREPARENTESE);
         parseExpr();
@@ -294,47 +296,50 @@ static void parseCmd()
     }
     else if (t.type == FOR)
     {
+        // for '(' [ atrib ] ';' [ expr ] ';' [ atrib ] ')' cmd
         advanceToken();
         match(ABREPARENTESE);
 
         if (t.type == ID)
         {
-            parseAtrib();
+            parseAtrib(); // Atribuição opcional
         }
         match(PONTOVIRGULA);
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr();
+            parseExpr(); // Expressão opcional
         }
         match(PONTOVIRGULA);
 
         if (t.type == ID)
         {
-            parseAtrib();
+            parseAtrib(); // Atribuição opcional
         }
         match(FECHAPARENTESE);
         parseCmd();
     }
     else if (t.type == RETURN)
     {
+        // return [ expr ] ';'
         advanceToken();
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr();
+            parseExpr(); // Expressão opcional
         }
         match(PONTOVIRGULA);
     }
     else if (t.type == ID)
     {
+        // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
         char nome[256];
         strcpy(nome, t.lexeme);
         advanceToken();
 
         if (t.type == ABREPARENTESE)
         {
-            // Chamada de função: id ( [expr { ',' expr}] )
+            // Chamada de função
             advanceToken();
 
             if (t.type != FECHAPARENTESE)
@@ -352,14 +357,20 @@ static void parseCmd()
         }
         else
         {
-            // Atribuição: id = expr
+            // Atribuição
             parseAtrib();
             match(PONTOVIRGULA);
         }
     }
     else if (t.type == ABRECHAVE)
     {
-        parseBloco();
+        // '{' { cmd } '}'
+        match(ABRECHAVE);
+        while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
+        {
+            parseCmd();
+        }
+        match(FECHACHAVE);
     }
     else if (t.type == PONTOVIRGULA)
     {
@@ -368,6 +379,7 @@ static void parseCmd()
     }
     else
     {
+        // Erro de sintaxe
         printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
         exit(1);
     }
