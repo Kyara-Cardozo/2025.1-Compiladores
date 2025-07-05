@@ -130,6 +130,144 @@ static void parseBloco()
     match(FECHACHAVE);
 }
 
+// to do
+//  <fator> ::= { = id [ '[' expr ']' ] | intcon | realcon | charcon | id '(' [expr { ',' expr } ] ')' | '(' expr ')' | '!' fator}
+static void parseFator()
+{
+    if (t.type == ID)
+    {
+        char nome[256];
+        strcpy(nome, t.lexeme);
+        advanceToken();
+
+        if (t.type == ABRECOLCHETE)
+        {
+            // Vetor: id [ expr ]
+            advanceToken();
+            parseExpr();
+            match(FECHACOLCHETE);
+        }
+        else if (t.type == ABREPARENTESE)
+        {
+            // chama de função: id ( [expr {, expr}] )
+            advanceToken();
+
+            if (t.type != FECHAPARENTESE)
+            {
+                parseExpr();
+
+                while (t.type == VIRGULA)
+                {
+                    advanceToken();
+                    parseExpr();
+                }
+            }
+
+            match(FECHAPARENTESE);
+        }
+        else
+        {
+        }
+    }
+    else if (t.type == INT || t.type == REAL || t.type == CHAR)
+    {
+        advanceToken();
+    }
+    else if (t.type == ABREPARENTESE)
+    {
+        advanceToken();
+        parseExpr();
+        match(FECHAPARENTESE);
+    }
+    else if (t.type == NOT)
+    {
+        advanceToken();
+        parseFator();
+    }
+    else
+    {
+        printf("Erro de sintaxe na linha %d: fator inesperado: '%s'\n", t.line, t.lexeme);
+        exit(1);
+    }
+}
+
+// to do
+// <termo> ::= fator {(* | / | &&) fator};
+static void parseTermo()
+{
+    parseFator();
+
+    while (t.type == MUL || t.type == DIV || t.type == AND)
+    {
+        advanceToken();
+        parseFator();
+    }
+    exit(1);
+}
+
+// to do
+// <expreSimp> ::= [+ | – ] termo {(+ | – | ||) termo};
+static void parseExprSimp()
+{
+    if (t.type == MAIS || t.type == MENOS)
+    {
+        advanceToken();
+    }
+
+    parseTermo();
+
+    while (t.type == MAIS || t.type == MENOS || t.type == OR)
+    {
+        advanceToken();
+        parseTermo();
+    }
+    exit(1);
+}
+
+// to do
+// <expre> ::= expr_simp [ op_rel expr_simp ];
+static void parseExpr()
+{
+    parseExprSimp();
+
+    if (t.type == IGUAL ||
+        t.type == NEGACAO ||
+        t.type == MENORQUE ||
+        t.type == MAIORQUE ||
+        t.type == MENORouIGUAL ||
+        t.type == MAIORouIGUAL)
+    {
+        advanceToken();
+        parseExprSimp();
+    }
+    exit(1);
+}
+
+// <atrib> ::= id [ '[' expr ']' ] = expr
+// to do
+
+static void parseAtrib()
+{
+    if (t.type != ID)
+    {
+        printf("Erro de sintaxe na linha %d: identificador esperado na atribuição.\n", t.line);
+        exit(1);
+    }
+
+    advanceToken();
+
+    if (t.type == ABRECOLCHETE)
+    {
+        advanceToken();
+        parseExpr();
+        match(FECHACOLCHETE);
+    }
+
+    match(IGUAL);
+    parseExpr();
+    exit(1);
+}
+
 // < tipos_param> ::= <tipo> ID ( parametros );
 // static void reconheceParametro(const char* nome)
 // {
