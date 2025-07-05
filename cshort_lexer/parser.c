@@ -268,17 +268,110 @@ static void parseAtrib()
     exit(1);
 }
 
-// < tipos_param> ::= <tipo> ID ( parametros );
-// static void reconheceParametro(const char* nome)
-// {
-//     if (t.type != ID) {
-//         printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
-//         exit(1);
-//     }
+static void parseCmd()
+{
+    if (t.type == IF)
+    {
+        advanceToken();
+        match(ABREPARENTESE);
+        parseExpr();
+        match(FECHAPARENTESE);
+        parseCmd();
 
-//     advanceToken();
-//     return;
-// }
+        if (t.type == ELSE)
+        {
+            advanceToken();
+            parseCmd();
+        }
+    }
+    else if (t.type == WHILE)
+    {
+        advanceToken();
+        match(ABREPARENTESE);
+        parseExpr();
+        match(FECHAPARENTESE);
+        parseCmd();
+    }
+    else if (t.type == FOR)
+    {
+        advanceToken();
+        match(ABREPARENTESE);
+
+        if (t.type == ID)
+        {
+            parseAtrib();
+        }
+        match(PONTOVIRGULA);
+
+        if (t.type != PONTOVIRGULA)
+        {
+            parseExpr();
+        }
+        match(PONTOVIRGULA);
+
+        if (t.type == ID)
+        {
+            parseAtrib();
+        }
+        match(FECHAPARENTESE);
+        parseCmd();
+    }
+    else if (t.type == RETURN)
+    {
+        advanceToken();
+
+        if (t.type != PONTOVIRGULA)
+        {
+            parseExpr();
+        }
+        match(PONTOVIRGULA);
+    }
+    else if (t.type == ID)
+    {
+        char nome[256];
+        strcpy(nome, t.lexeme);
+        advanceToken();
+
+        if (t.type == ABREPARENTESE)
+        {
+            // Chamada de função: id ( [expr { ',' expr}] )
+            advanceToken();
+
+            if (t.type != FECHAPARENTESE)
+            {
+                parseExpr();
+
+                while (t.type == VIRGULA)
+                {
+                    advanceToken();
+                    parseExpr();
+                }
+            }
+            match(FECHAPARENTESE);
+            match(PONTOVIRGULA);
+        }
+        else
+        {
+            // Atribuição: id = expr
+            parseAtrib();
+            match(PONTOVIRGULA);
+        }
+    }
+    else if (t.type == ABRECHAVE)
+    {
+        parseBloco();
+    }
+    else if (t.type == PONTOVIRGULA)
+    {
+        // Comando vazio
+        advanceToken();
+    }
+    else
+    {
+        printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
+        exit(1);
+    }
+}
 
 // <decl> ::= <tipo> ID ( ) | <tipo> ID ;
 static DeclKind decl()
