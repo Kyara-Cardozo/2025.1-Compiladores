@@ -1,4 +1,4 @@
-float somador(int x, int w);
+float somador(int x, int w); //Esse ele não pediu, vamos remover ??
 
 float soma(int z, int y) {
 }
