@@ -55,6 +55,8 @@ int main() {
     // char fileName[200] = "entrada_declvar.cshort";
     // char fileName[200] = "entrada_funcoes.cshort";
     char fileName[200] = "entrada_completa.cshort";
+    // char fileName[200] = "entrada_completa_que_funciona.cshort";
+// 
 
     
 
