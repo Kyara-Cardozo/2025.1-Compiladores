@@ -136,11 +136,14 @@ static void parseBloco()
 //  <fator> ::= { = id [ '[' expr ']' ] | intcon | realcon | charcon | id '(' [expr { ',' expr } ] ')' | '(' expr ')' | '!' fator}
 static void parseFator()
 {
+    printf("\n\nParsing factor: %s\n", t.lexeme);
+
     if (t.type == ID)
     {
         char nome[256];
         strcpy(nome, t.lexeme);
         advanceToken();
+        printf("\n\n token depois do advance: %s\n\n", t.lexeme);
 
         if (t.type == ABRECOLCHETE)
         {
@@ -167,9 +170,10 @@ static void parseFator()
 
             match(FECHAPARENTESE);
         }
-        else
-        {
-        }
+        // else if(t.type == PONTOVIRGULA){ //Acho que tem um problema na gramatica, por que depois de fator reconhecer um id ele não reconhece o ponto e vírgula e não tem por onde sair, por isso a tabela de símblos não é impressa
+        //     printf("\n\nMatch com ; no fator \n\n");
+        //     advanceToken();
+        // }
     }
     else if (t.type == INT || t.type == REAL || t.type == CHAR)
     {
@@ -186,12 +190,84 @@ static void parseFator()
         advanceToken();
         parseFator();
     }
+    
     else
     {
         printf("Erro de sintaxe na linha %d: fator inesperado: '%s'\n", t.line, t.lexeme);
         exit(1);
     }
 }
+
+// static void parseFator()
+// {
+//     printf("\n\nParsing factor: %s\n", t.lexeme);
+
+//     if (t.type == ID)
+//     {
+//         char nome[256];
+//         strcpy(nome, t.lexeme);
+//         advanceToken();
+//         printf("\n\nToken depois do advance: %s\n\n", t.lexeme);
+
+//         if (t.type == ABRECOLCHETE)
+//         {
+//             // Vetor: id [ expr ]
+//             advanceToken();
+//             parseExpr();
+//             match(FECHACOLCHETE);
+//         }
+//         else if (t.type == ABREPARENTESE)
+//         {
+//             // Chamada de função: id ( [expr {, expr}] )
+//             advanceToken();
+
+//             if (t.type != FECHAPARENTESE)
+//             {
+//                 parseExpr();
+
+//                 while (t.type == VIRGULA)
+//                 {
+//                     advanceToken();
+//                     parseExpr();
+//                 }
+//             }
+
+//             match(FECHAPARENTESE);
+//         }
+//         else
+//         {
+//             // Caso o identificador seja usado como um fator simples
+//             // Não há necessidade de erro aqui, apenas avança o token
+//             // printf("\n\nFator reconhecido como ID simples: %s\n\n", nome);
+//             advanceToken();
+
+//         }
+//     }
+//     else if (t.type == INT || t.type == REAL || t.type == CHAR)
+//     {
+//         // Constantes inteiras, reais ou caracteres
+//         advanceToken();
+//     }
+//     else if (t.type == ABREPARENTESE)
+//     {
+//         // Expressão entre parênteses: ( expr )
+//         advanceToken();
+//         parseExpr();
+//         match(FECHAPARENTESE);
+//     }
+//     else if (t.type == NOT)
+//     {
+//         // Negação: ! fator
+//         advanceToken();
+//         parseFator();
+//     }
+//     else
+//     {
+//         // Erro de sintaxe para fatores inválidos
+//         printf("Erro de sintaxe na linha %d: fator inesperado: '%s'\n", t.line, t.lexeme);
+//         exit(1);
+//     }
+// }
 
 // <termo> ::= fator {(* | / | &&) fator};
 static void parseTermo()
@@ -246,13 +322,13 @@ static void parseExpr()
 
 static void parseAtrib()
 {
-    if (t.type != ID)
-    {
-        printf("Erro de sintaxe na linha %d: identificador esperado na atribuição.\n", t.line);
-        exit(1);
-    }
+    // if (t.type != ID)
+    // {
+    //     printf("Erro de sintaxe na linha %d: identificador esperado na atribuição.\n", t.line);
+    //     exit(1);
+    // }
 
-    advanceToken();
+    // advanceToken();
 
     if (t.type == ABRECOLCHETE)
     {
@@ -266,67 +342,169 @@ static void parseAtrib()
     exit(1);
 }
 
+// static void parseCmd()
+// {
+//     printf("\n\n Parsing command: %s\n", t.lexeme);
+//     if (t.type == IF)
+//     {
+//         // if '(' expr ')' cmd [ else cmd ]
+//         advanceToken();
+//         match(ABREPARENTESE);
+//         // parseExpr();
+//         parseExpressao();
+//         match(FECHAPARENTESE);
+//         parseCmd();
+
+//         if (t.type == ELSE)
+//         {
+//             advanceToken();
+//             parseCmd();
+//         }
+//     }
+//     else if (t.type == WHILE)
+//     {
+//         // while '(' expr ')' cmd
+//         advanceToken();
+//         match(ABREPARENTESE);
+//         parseExpr();
+//         // parseExpressao();
+//         match(FECHAPARENTESE);
+//         parseCmd();
+//     }
+//     else if (t.type == FOR)
+//     {
+//         // for '(' [ atrib ] ';' [ expr ] ';' [ atrib ] ')' cmd
+//         advanceToken();
+//         match(ABREPARENTESE);
+
+//         if (t.type == ID)
+//         {
+//             parseAtrib(); // Atribuição opcional
+//         }
+//         match(PONTOVIRGULA);
+
+//         if (t.type != PONTOVIRGULA)
+//         {
+//             parseExpr(); // Expressão opcional
+//             // parseExpressao();
+
+//         }
+//         match(PONTOVIRGULA);
+
+//         if (t.type == ID)
+//         {
+//             parseAtrib(); // Atribuição opcional
+//         }
+//         match(FECHAPARENTESE);
+//         parseCmd();
+//     }
+//     else if (t.type == RETURN)
+//     {
+//         printf("\nEncontrou return\n");
+//         // return [ expr ] ';'
+//         advanceToken();
+
+//         if (t.type != PONTOVIRGULA)
+//         {
+//             parseExpr(); // Expressão opcional
+//             // parseExpressao();
+
+//         }
+//         match(PONTOVIRGULA);
+//         printf("\n\nMatch com ; depois do return \n\n");
+//     }
+//     else if (t.type == ID)
+//     {
+        
+//         printf("\nID: %s\n", t.lexeme);
+//         printf("\n\n Proximo token : %s\n\n", tLookahead.lexeme);
+
+//         // printSymbolTable();
+
+//         // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
+//         char nome[256];
+//         strcpy(nome, t.lexeme);
+
+//         if (tLookahead.type == PONTOVIRGULA) {
+//             advanceToken();
+//             printf("\n\nMeu match com ; \n\n");
+//         }
+
+//         advanceToken();
+        
+
+
+//         if (t.type == ABREPARENTESE)
+//         {
+//             // Chamada de função
+//             advanceToken();
+
+//             if (t.type != FECHAPARENTESE)
+//             {
+//                 parseExpr();
+//                 // parseExpressao();
+
+
+//                 while (t.type == VIRGULA)
+//                 {
+//                     advanceToken();
+//                     parseExpr();
+//                     // parseExpressao();
+
+//                 }
+//             }
+//             match(FECHAPARENTESE);
+//             match(PONTOVIRGULA);
+//         }
+//         else
+//         {
+//             // Atribuição
+//             parseAtrib();
+//             match(PONTOVIRGULA);
+//             printf("\n\nMatch com ; \n\n");
+//         }
+//     }
+//     else if (t.type == ABRECHAVE)
+//     {
+//         // '{' { cmd } '}'
+//         match(ABRECHAVE);
+//         while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
+//         {
+//             parseCmd();
+//         }
+//         match(FECHACHAVE);
+//     }
+//     else if (t.type == PONTOVIRGULA)
+//     {
+//         // Comando vazio
+//         advanceToken();
+//         printf("\n\nMatch com ; 2 \n\n");
+
+//     }
+//     else
+//     {
+//         // Erro de sintaxe
+//         printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
+//         exit(1);
+//     }
+// }
 static void parseCmd()
 {
-    if (t.type == IF)
-    {
-        // if '(' expr ')' cmd [ else cmd ]
-        advanceToken();
-        match(ABREPARENTESE);
-        parseExpr();
-        match(FECHAPARENTESE);
-        parseCmd();
+    printf("\n\n Parsing command: %s\n", t.lexeme);
 
-        if (t.type == ELSE)
-        {
-            advanceToken();
-            parseCmd();
-        }
-    }
-    else if (t.type == WHILE)
-    {
-        // while '(' expr ')' cmd
-        advanceToken();
-        match(ABREPARENTESE);
-        parseExpr();
-        match(FECHAPARENTESE);
-        parseCmd();
-    }
-    else if (t.type == FOR)
-    {
-        // for '(' [ atrib ] ';' [ expr ] ';' [ atrib ] ')' cmd
-        advanceToken();
-        match(ABREPARENTESE);
-
-        if (t.type == ID)
-        {
-            parseAtrib(); // Atribuição opcional
-        }
-        match(PONTOVIRGULA);
-
-        if (t.type != PONTOVIRGULA)
-        {
-            parseExpr(); // Expressão opcional
-        }
-        match(PONTOVIRGULA);
-
-        if (t.type == ID)
-        {
-            parseAtrib(); // Atribuição opcional
-        }
-        match(FECHAPARENTESE);
-        parseCmd();
-    }
-    else if (t.type == RETURN)
+    if (t.type == RETURN)
     {
         // return [ expr ] ';'
+        printf("\nEncontrou return\n");
         advanceToken();
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr(); // Expressão opcional
+            parseExpr(); // Processa a expressão opcional
         }
-        match(PONTOVIRGULA);
+
+        match(PONTOVIRGULA); // Verifica e consome o ';'
+        printf("\n\nMatch com ; depois do return \n\n");
     }
     else if (t.type == ID)
     {
@@ -492,6 +670,7 @@ static DeclKind decl()
         }
         else
         {
+            printf("\ncaiu aqui 1\n");
             printf("Erro de sintaxe na linha %d: esperado ';' após declaração de variável.\n", t.line);
             exit(1);
         }
@@ -503,7 +682,7 @@ static DeclKind decl()
     }
 }
 
-static void parseFunc()
+static DeclKind parseFunc()
 {
     // func = tipo id '(' tipos_param ')' '{' { tipo decl_var { ',' decl_var } ';' } { cmd } '}'
 
@@ -554,7 +733,7 @@ static void parseFunc()
     // Processa declarações de variáveis locais
     while (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T)
     {
-        parseTipo(); // Processa o tipo da variável
+        // advanceToken();
 
         do
         {
@@ -572,12 +751,12 @@ static void parseFunc()
             }
             else if (t.type != PONTOVIRGULA) // Erro se não for ',' ou ';'
             {
-                printf("Erro de sintaxe na linha %d: esperado ',' ou ';' após declaração de variável.\n", t.line);
+                printf("Erro de sintaxe na linha %d: esperado ',' ou ';' após declaração de variável e foi encontrado %s.\n", t.line, t.lexeme);
                 exit(1);
             }
         } while (t.type == VIRGULA);
 
-        match(PONTOVIRGULA); // ';'
+        match(PONTOVIRGULA);
     }
 
     // Processa comandos

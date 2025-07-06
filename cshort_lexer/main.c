@@ -50,11 +50,12 @@ const char* tokenToStr(TokenType type) {
 }
 
 int main() {
-    // char fileName[200] = "entrada_funcoes.cshort";
     // char fileName[200] = "entrada_variaveis.cshort";
     // char fileName[200] = "entrada.cshort";
-    // char fileName[200] = "entrada_fator.cshort";
-    char fileName[200] = "entrada_declvar.cshort";
+    // char fileName[200] = "entrada_declvar.cshort";
+    // char fileName[200] = "entrada_funcoes.cshort";
+    char fileName[200] = "entrada_completa.cshort";
+
     
 
 
