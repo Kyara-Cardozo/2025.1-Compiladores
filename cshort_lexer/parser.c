@@ -243,7 +243,6 @@ static void parseAtrib()
 
     match(IGUAL);
     parseExpr();
-    exit(1);
 }
 
 static void parseCmd()
@@ -308,7 +307,7 @@ static void parseCmd()
             parseExpr(); // Expressão opcional
         }
     }
-    else if (t.type == ID)
+    else if (t.type == ID) //existe uma ambiguidade, porque id pode ser também uma atribuição
     {
         // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
        // Não consome antecipadamente; espere decidir o tipo de comando
@@ -331,33 +330,6 @@ static void parseCmd()
                 }
             }
 
-            match(FECHAPARENTESE);
-            match(PONTOVIRGULA);
-        }
-        else
-        {
-            // Atribuição
-            parseAtrib();
-            match(PONTOVIRGULA);
-        }
-
-
-
-        if (t.type == ABREPARENTESE)
-        {
-            // Chamada de função
-            advanceToken();
-
-            if (t.type != FECHAPARENTESE)
-            {
-                parseExpr();
-
-                while (t.type == VIRGULA)
-                {
-                    advanceToken();
-                    parseExpr();
-                }
-            }
             match(FECHAPARENTESE);
             match(PONTOVIRGULA);
         }
