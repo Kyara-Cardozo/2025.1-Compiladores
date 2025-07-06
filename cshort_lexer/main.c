@@ -54,11 +54,13 @@ int main() {
     // char fileName[200] = "entrada.cshort";
     // char fileName[200] = "entrada_declvar.cshort";
     // char fileName[200] = "entrada_funcoes.cshort";
-    char fileName[200] = "entrada_completa.cshort";
+    // char fileName[200] = "entrada_completa.cshort";
     // char fileName[200] = "entrada_completa_que_funciona.cshort";
-// 
-
     
+    // char fileName[200] = "entrada_2.cshort";
+    char fileName[200] = "entrada_chat.cshort";
+
+
 
 
     FILE *file = fopen(fileName, "r");
