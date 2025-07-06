@@ -109,14 +109,11 @@ static void parseExpressao()
 
 static void parseFator()
 {
-    printf("\n\nParsing factor: %s\n", t.lexeme);
-
     if (t.type == ID)
     {
         char nome[256];
         strcpy(nome, t.lexeme);
         advanceToken();
-        printf("\n\nToken depois do advance: %s\n\n", t.lexeme);
 
         if (t.type == ABRECOLCHETE)
         {
@@ -146,7 +143,6 @@ static void parseFator()
         else if (t.type == PONTOVIRGULA)
         {
             // Atribuição ou comando vazio
-            printf("\n\nMatch com ; no fator \n\n");
             advanceToken();
             parseCmd();
         }
@@ -191,8 +187,6 @@ static void parseFator()
 // <termo> ::= fator {(* | / | &&) fator};
 static void parseTermo()
 {
-    printf("\n\nParsing Termo: %s\n", t.lexeme);
-
     parseFator();
 
     while (t.type == MUL || t.type == DIV || t.type == AND)
@@ -205,7 +199,6 @@ static void parseTermo()
 // <expreSimp> ::= [+ | – ] termo {(+ | – | ||) termo};
 static void parseExprSimp()
 {
-    printf("\n\nParsing expression: %s\n", t.lexeme);
     if (t.type == MAIS || t.type == MENOS)
     {
         advanceToken();
@@ -255,7 +248,6 @@ static void parseAtrib()
 
 static void parseCmd()
 {
-    printf("\n\n Parsing command: %s\n", t.lexeme);
     if (t.type == IF)
     {
         // if '(' expr ')' cmd [ else cmd ]
@@ -374,12 +366,10 @@ static void parseCmd()
             // Atribuição
             parseAtrib();
             match(PONTOVIRGULA);
-            printf("\n\nMatch com ; \n\n");
         }
     }
     else if (t.type == ABRECHAVE)
     {
-        printf("\n\n\nPASSOU NO ABRE CHAVES DO CMD\n\n\n");
         // '{' { cmd } '}'
         match(ABRECHAVE);
         while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
@@ -392,8 +382,6 @@ static void parseCmd()
     {
         // Comando vazio
         advanceToken();
-        //TODO: por onde esse fecha chaves vai sair ??
-        printf("\n\nMatch com ; dentro do cmd \n\n");
 
     }
     else if (t.type == FECHACHAVE || t.type == TOKEN_EOF)
@@ -581,8 +569,6 @@ static DeclKind parseFunc()
     // Processa o corpo da função
     match(ABRECHAVE); // '{'
 
-    printf("\n\n token apos o abre chaaves : %s \n\n", t.lexeme);
-
     // Processa declarações de variáveis locais
     while (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T)
     {
@@ -615,10 +601,7 @@ static DeclKind parseFunc()
     // Processa comandos
     while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
     {
-        printf("\n\nPROCESSANDO COMANDO DENTRO DE PARSE FUNC\n\n");
-        printf("\n\nToken atual: %s\n", t.lexeme);
         parseCmd(); // Processa cada comando
-        printf("\n\nVOLTOU DO CMD DENTRO DE PARSE FUNC\n\n");
     }
 
     match(FECHACHAVE); // '}'
