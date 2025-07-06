@@ -1,2 +1,11 @@
 int a;
-a = 2;
+float b[10];
+char c;
+
+int soma(int x, int y) {
+    int resultado;
+    
+    return resultado;
+}
+
+
