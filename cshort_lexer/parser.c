@@ -19,7 +19,6 @@ void static parseCmd();
 DeclKind static parseFunc();
 static void parseTermo();
 
-
 // Função auxiliar para avançar o token
 static void match(TokenType expected)
 {
@@ -93,7 +92,7 @@ static void parseExpressao()
     }
     else if (t.type == ID)
     {
-        if (!lookupSymbol(t.lexeme))
+        if (!lookupSymbol(t.lexeme, SCOPO_LOCAL))
         {
             printf("Erro semântico: identificador '%s' usado mas não declarado.\n", t.lexeme);
             exit(1);
@@ -145,10 +144,10 @@ static void parseFator()
         {
             // Atribuição ou comando vazio
             // advanceToken();
-
         }
-        else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
-            advanceToken();    
+        else if (t.type == MAIS || t.type == MENOS || t.type == OR)
+        {
+            advanceToken();
             parseTermo();
         }
         else
@@ -175,10 +174,11 @@ static void parseFator()
         advanceToken();
         parseFator();
     }
-    else if (t.type == PONTOVIRGULA){
+    else if (t.type == PONTOVIRGULA)
+    {
         advanceToken();
     }
-   
+
     else
     {
         // Erro de sintaxe para fatores inválidos
@@ -312,10 +312,10 @@ static void parseCmd()
             parseExpr(); // Expressão opcional
         }
     }
-    else if (t.type == ID) //existe uma ambiguidade, porque id pode ser também uma atribuição
+    else if (t.type == ID) // existe uma ambiguidade, porque id pode ser também uma atribuição
     {
         // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
-       // Não consome antecipadamente; espere decidir o tipo de comando
+        // Não consome antecipadamente; espere decidir o tipo de comando
         char nome[256];
         strcpy(nome, t.lexeme);
         advanceToken();
@@ -350,7 +350,6 @@ static void parseCmd()
     {
         // Comando vazio
         advanceToken();
-
     }
     else if (t.type == FECHACHAVE || t.type == TOKEN_EOF)
     {
@@ -362,30 +361,33 @@ static void parseCmd()
         printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
         exit(1);
     }
-    
 }
 
-
-
-
 // <decl> ::= <tipo> ID ( ) | <tipo> ID ;
-static DeclKind decl()
-{  
-    char nome[256];
-    strcpy(nome, t.lexeme);
+static DeclKind decl(const char *tipoAtual)
+{
+    // char nome[256];
+    // char tipoAtual[256];
+
+    // strcpy(tipoAtual, t.lexeme);
+
+    // char tipoAtual[256];
+    // strcpy(tipoAtual, t.lexeme); // Aqui t.lexeme ainda é "int", "void" etc.
+    // advanceToken();
+    printf("DEBUG: Após tipo '%s', próximo token é '%s' (tipo: %d)\n", tipoAtual, t.lexeme, t.type);
 
     if (t.type != ID)
     {
         printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
         exit(1);
     }
-
-    strcpy(nome, t.lexeme);
+    char nomeSimbolo[256];
+    strcpy(nomeSimbolo, t.lexeme); // Salva o nome da variável/função
     advanceToken();
 
     if (t.type == ABREPARENTESE)
     {
-        insertSymbol(nome, SYMBOL_FUNC);
+        insertSymbol(nomeSimbolo, tipoAtual, SYMBOL_FUNC, SCOPO_GLOBAL, 0);
 
         advanceToken();
 
@@ -401,7 +403,7 @@ static DeclKind decl()
                     exit(1);
                 }
 
-                insertSymbol(t.lexeme, SYMBOL_PARAM);
+                insertSymbol(t.lexeme, "int", SYMBOL_PARAM, SCOPO_LOCAL, 1);
                 advanceToken();
 
                 if (t.type == VIRGULA) // Se houver uma vírgula, avança para o próximo parâmetro
@@ -442,23 +444,26 @@ static DeclKind decl()
             printf("Erro de sintaxe na linha %d: esperado constante inteira.\n", t.line);
             exit(0);
         }
-        insertSymbol(nome, SYMBOL_VAR);
+        int tamanho = atoi(t.lexeme);
         advanceToken();
+
         if (t.type != FECHACOLCHETE)
         {
             printf("Erro de sintaxe na linha %d: esperado ']'.\n", t.line);
             exit(0);
         }
         advanceToken();
+        insertSymbol(nomeSimbolo, tipoAtual, SYMBOL_VETOR, SCOPO_GLOBAL, tamanho);
     }
-    else if (t.type == PONTOVIRGULA) // Caso seja uma variável
+    else if (t.type == PONTOVIRGULA) // se for uma variável
     {
-        insertSymbol(nome, SYMBOL_VAR);
+        // insertSymbol(tipoAtual, tipoAtual, SYMBOL_VAR, SCOPO_GLOBAL, 1);
+        insertSymbol(nomeSimbolo, tipoAtual, SYMBOL_VAR, SCOPO_GLOBAL, 1);
         return DECL_VAR;
     }
-    else if (t.type == VIRGULA) // Caso seja uma lista de variáveis
+    else if (t.type == VIRGULA) // se for uma lista de variáveis
     {
-        insertSymbol(nome, SYMBOL_VAR);
+        insertSymbol(tipoAtual, "int", SYMBOL_VAR, SCOPO_LOCAL, 1);
         do
         {
             advanceToken();
@@ -467,7 +472,8 @@ static DeclKind decl()
                 printf("Erro de sintaxe na linha %d: identificador esperado após ','.\n", t.line);
                 exit(1);
             }
-            insertSymbol(t.lexeme, SYMBOL_VAR);
+
+            insertSymbol(t.lexeme, "int", SYMBOL_VAR, SCOPO_GLOBAL, 1);
             advanceToken();
         } while (t.type == VIRGULA);
 
@@ -494,6 +500,7 @@ static DeclKind parseFunc()
     // func = tipo id '(' tipos_param ')' '{' { tipo decl_var { ',' decl_var } ';' } { cmd } '}'
 
     // Processa o identificador da função
+
     if (t.type != ID)
     {
         printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
@@ -502,23 +509,40 @@ static DeclKind parseFunc()
 
     char nomeFunc[256];
     strcpy(nomeFunc, t.lexeme);
-    insertSymbol(nomeFunc, SYMBOL_FUNC); // Insere a função na tabela de símbolos
     advanceToken();
 
     // Processa os parâmetros da função
-    match(ABREPARENTESE); // '('
+    match(ABREPARENTESE);         // '('
     if (t.type != FECHAPARENTESE) // Verifica se há parâmetros
     {
         do
         {
-            parseTipoSemVoid(); // Processa o tipo do parâmetro
+            // Salva o tipo da função
+            char tipoParam[32];
+            if (t.type == INT_T)
+                strcpy(tipoParam, "int");
+            else if (t.type == FLOAT_T)
+                strcpy(tipoParam, "float");
+            else if (t.type == CHAR_T)
+                strcpy(tipoParam, "char");
+            else if (t.type == BOOL_T)
+                strcpy(tipoParam, "bool");
+            else
+            {
+                printf("Erro de sintaxe na linha %d: tipo de parâmetro inválido.\n", t.line);
+                exit(1);
+            }
+
+            advanceToken();
+
+            // parseTipoSemVoid(); // Processa o tipo do parâmetro
 
             if (t.type != ID)
             {
                 printf("Erro de sintaxe na linha %d: identificador esperado após tipo do parâmetro.\n", t.line);
                 exit(1);
             }
-            insertSymbol(t.lexeme, SYMBOL_PARAM); // Insere o parâmetro na tabela de símbolos
+            insertSymbol(t.lexeme, tipoParam, SYMBOL_PARAM, SCOPO_LOCAL, 1);
             advanceToken();
 
             if (t.type == VIRGULA) // ',' indica mais parâmetros
@@ -535,12 +559,23 @@ static DeclKind parseFunc()
     match(FECHAPARENTESE); // ')'
 
     // Processa o corpo da função
-   
+
     match(ABRECHAVE); // '{'
 
     // Processa declarações de variáveis locais
     while (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T)
     {
+        char tipoVar[32];
+        if (t.type == INT_T)
+            strcpy(tipoVar, "int");
+        else if (t.type == FLOAT_T)
+            strcpy(tipoVar, "float");
+        else if (t.type == CHAR_T)
+            strcpy(tipoVar, "char");
+        else if (t.type == BOOL_T)
+            strcpy(tipoVar, "bool");
+
+        advanceToken();
         advanceToken();
 
         do
@@ -550,7 +585,7 @@ static DeclKind parseFunc()
                 printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
                 exit(1);
             }
-            insertSymbol(t.lexeme, SYMBOL_VAR); // Insere a variável na tabela de símbolos
+            insertSymbol(t.lexeme, tipoVar, SYMBOL_VAR, SCOPO_LOCAL, 1); // Insere a variável na tabela de símbolos
             advanceToken();
 
             if (t.type == VIRGULA) // ',' indica mais variáveis
@@ -585,32 +620,45 @@ void parseProgram()
     {
         if (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T || t.type == VOID)
         {
+            char tipoAtual[20];
+            if (t.type == INT_T)
+                strcpy(tipoAtual, "int");
+            else if (t.type == FLOAT_T)
+                strcpy(tipoAtual, "float");
+            else if (t.type == CHAR_T)
+                strcpy(tipoAtual, "char");
+            else if (t.type == BOOL_T)
+                strcpy(tipoAtual, "bool");
+            else if (t.type == VOID)
+                strcpy(tipoAtual, "void");
+
             // Verifica se é uma declaração ou uma função
-            advanceToken();
-            if (tLookahead.type == ABREPARENTESE)
+            advanceToken(); // Agora t está no ID
+            if (t.type == ID && tLookahead.type == ABREPARENTESE)
             {
                 // É uma função
                 parseFunc();
             }
-            else
+            else if (t.type == ID)
             {
                 // É uma declaração
-                DeclKind tipoDecl = decl();
+                DeclKind tipoDecl = decl(tipoAtual);
                 match(PONTOVIRGULA);
             }
+            else
+            {
+                printf("Erro de sintaxe na linha %d: identificador esperado após tipo.\n", t.line);
+                exit(1);
+            }
         }
-        else
-        {
-            printf("Erro de sintaxe na linha %d: esperado tipo ou fim do arquivo.\n", t.line);
-            exit(1);
-        }
+
+        // if (t.type != TOKEN_EOF)
+        // {
+        //     printf("Erro de sintaxe: conteúdo inesperado após o fim do programa (linha %d).\n", t.line);
+        //     exit(1);
+        // }
+            printSymbolTable();
     }
 
-    if (t.type != TOKEN_EOF)
-    {
-        printf("Erro de sintaxe: conteúdo inesperado após o fim do programa (linha %d).\n", t.line);
-        exit(1);
-    }
 
-    printSymbolTable();
 }

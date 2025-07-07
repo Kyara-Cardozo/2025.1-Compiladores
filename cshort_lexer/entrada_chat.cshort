@@ -4,6 +4,6 @@ char c;
 
 int soma(int x, int y) {
     int resultado;
-    resultado = 5 + 3;
+    resultado = 3 + 4;
     return resultado;
 }
