@@ -17,6 +17,7 @@ typedef enum
 void static parseExpr();
 void static parseCmd();
 DeclKind static parseFunc();
+static void parseTermo();
 
 
 // Função auxiliar para avançar o token
@@ -113,7 +114,7 @@ static void parseFator()
     {
         char nome[256];
         strcpy(nome, t.lexeme);
-        advanceToken();
+        advanceToken(); //achei x e avanco    
 
         if (t.type == ABRECOLCHETE)
         {
@@ -143,13 +144,23 @@ static void parseFator()
         else if (t.type == PONTOVIRGULA)
         {
             // Atribuição ou comando vazio
+            printf("Estou caindo no ponto e vírgula, token %s\n", t.lexeme);
+            // advanceToken();
+            printf("Avancei no ponto e vitguls %s\n", t.lexeme);
+
+        }
+        else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
             advanceToken();
-            parseCmd();
+            printf("\n\n Eu vou passar %s para termo por que cai no {(+ | – | ||) termo}  de fator \n\n", t.lexeme);
+    
+            parseTermo();
         }
         else
         {
-            printf("\n\n Caindo aqui \n\n");
+            printf("\n\n Caindo aqui eu sou o token %s \n\n", t.lexeme);
             advanceToken();
+            // parseCmd();
+
 
         }
     }
@@ -187,6 +198,8 @@ static void parseFator()
 // <termo> ::= fator {(* | / | &&) fator};
 static void parseTermo()
 {
+    printf("\n\n Eu vou passar %s para fator\n\n", t.lexeme);
+
     parseFator();
 
     while (t.type == MUL || t.type == DIV || t.type == AND)
@@ -203,12 +216,15 @@ static void parseExprSimp()
     {
         advanceToken();
     }
+    printf("\n\n Eu vou passar %s para termo\n\n", t.lexeme);
 
     parseTermo();
 
     while (t.type == MAIS || t.type == MENOS || t.type == OR)
     {
         advanceToken();
+        printf("\n\n Eu vou passar %s para termo por que cai no {(+ | – | ||) termo} \n\n", t.lexeme);
+
         parseTermo();
     }
 }
@@ -242,11 +258,14 @@ static void parseAtrib()
     }
 
     match(IGUAL);
+    // advanceToken(); //A alteracao que fez funcionar o 5 + 3 foi adicionar esse advance
+
     parseExpr();
 }
 
 static void parseCmd()
 {
+
     if (t.type == IF)
     {
         // if '(' expr ')' cmd [ else cmd ]
@@ -268,7 +287,6 @@ static void parseCmd()
         advanceToken();
         match(ABREPARENTESE);
         parseExpr();
-        // parseExpressao();
         match(FECHAPARENTESE);
         parseCmd();
     }
@@ -309,6 +327,7 @@ static void parseCmd()
     }
     else if (t.type == ID) //existe uma ambiguidade, porque id pode ser também uma atribuição
     {
+        printf("\n\nLi um id %s \n\n", t.lexeme);
         // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
        // Não consome antecipadamente; espere decidir o tipo de comando
         char nome[256];
@@ -333,22 +352,20 @@ static void parseCmd()
             match(FECHAPARENTESE);
             match(PONTOVIRGULA);
         }
-        else
+        else if (t.type == IGUAL)
         {
             // Atribuição
+            printf("Achei um igual, logo sou uma atribuição\n");
+            printf("\n\n lexeme do match %s\n\n", t.lexeme);
             parseAtrib();
+            printf("voltei da atribuição, devo ser um ; e sou um: %s\n",t.lexeme);
+
+            // advanceToken();
+            // printf("\n\n É aqui ou mudo meu nome\n\n");
+            // printf("\n\n lexeme do match %s\n\n", t.lexeme);
             match(PONTOVIRGULA);
+            // printf("\n\n depois do match\n\n");
         }
-    }
-    else if (t.type == ABRECHAVE)
-    {
-        // '{' { cmd } '}'
-        match(ABRECHAVE);
-        while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
-        {
-            parseCmd();
-        }
-        match(FECHACHAVE);
     }
     else if (t.type == PONTOVIRGULA)
     {
@@ -539,7 +556,10 @@ static DeclKind parseFunc()
     match(FECHAPARENTESE); // ')'
 
     // Processa o corpo da função
+   
     match(ABRECHAVE); // '{'
+    printf("\n\nProcessando um abre chaves no parse func, aqui o lexema é: %s\n\n", t.lexeme);
+
 
     // Processa declarações de variáveis locais
     while (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T)
@@ -566,13 +586,13 @@ static DeclKind parseFunc()
                 exit(1);
             }
         } while (t.type == VIRGULA);
-
         match(PONTOVIRGULA);
     }
 
     // Processa comandos
     while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
     {
+        // printf("\n\nCai pra processar comando por que encontrei %s\n\n", t.lexeme);
         parseCmd(); // Processa cada comando
     }
 
