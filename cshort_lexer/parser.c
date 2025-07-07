@@ -114,7 +114,7 @@ static void parseFator()
     {
         char nome[256];
         strcpy(nome, t.lexeme);
-        advanceToken(); //achei x e avanco    
+        advanceToken();
 
         if (t.type == ABRECOLCHETE)
         {
@@ -144,24 +144,17 @@ static void parseFator()
         else if (t.type == PONTOVIRGULA)
         {
             // Atribuição ou comando vazio
-            printf("Estou caindo no ponto e vírgula, token %s\n", t.lexeme);
             // advanceToken();
-            printf("Avancei no ponto e vitguls %s\n", t.lexeme);
 
         }
         else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
-            advanceToken();
-            printf("\n\n Eu vou passar %s para termo por que cai no {(+ | – | ||) termo}  de fator \n\n", t.lexeme);
-    
+            advanceToken();    
             parseTermo();
         }
         else
         {
-            printf("\n\n Caindo aqui eu sou o token %s \n\n", t.lexeme);
             advanceToken();
             // parseCmd();
-
-
         }
     }
     else if (t.type == INT || t.type == REAL || t.type == CHAR)
@@ -183,7 +176,6 @@ static void parseFator()
         parseFator();
     }
     else if (t.type == PONTOVIRGULA){
-        printf("\n\n Fator sai por ; \n\n");
         advanceToken();
     }
    
@@ -198,8 +190,6 @@ static void parseFator()
 // <termo> ::= fator {(* | / | &&) fator};
 static void parseTermo()
 {
-    printf("\n\n Eu vou passar %s para fator\n\n", t.lexeme);
-
     parseFator();
 
     while (t.type == MUL || t.type == DIV || t.type == AND)
@@ -216,14 +206,12 @@ static void parseExprSimp()
     {
         advanceToken();
     }
-    printf("\n\n Eu vou passar %s para termo\n\n", t.lexeme);
 
     parseTermo();
 
     while (t.type == MAIS || t.type == MENOS || t.type == OR)
     {
         advanceToken();
-        printf("\n\n Eu vou passar %s para termo por que cai no {(+ | – | ||) termo} \n\n", t.lexeme);
 
         parseTermo();
     }
@@ -258,7 +246,6 @@ static void parseAtrib()
     }
 
     match(IGUAL);
-    // advanceToken(); //A alteracao que fez funcionar o 5 + 3 foi adicionar esse advance
 
     parseExpr();
 }
@@ -327,7 +314,6 @@ static void parseCmd()
     }
     else if (t.type == ID) //existe uma ambiguidade, porque id pode ser também uma atribuição
     {
-        printf("\n\nLi um id %s \n\n", t.lexeme);
         // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
        // Não consome antecipadamente; espere decidir o tipo de comando
         char nome[256];
@@ -355,16 +341,9 @@ static void parseCmd()
         else if (t.type == IGUAL)
         {
             // Atribuição
-            printf("Achei um igual, logo sou uma atribuição\n");
-            printf("\n\n lexeme do match %s\n\n", t.lexeme);
             parseAtrib();
-            printf("voltei da atribuição, devo ser um ; e sou um: %s\n",t.lexeme);
 
-            // advanceToken();
-            // printf("\n\n É aqui ou mudo meu nome\n\n");
-            // printf("\n\n lexeme do match %s\n\n", t.lexeme);
             match(PONTOVIRGULA);
-            // printf("\n\n depois do match\n\n");
         }
     }
     else if (t.type == PONTOVIRGULA)
@@ -558,8 +537,6 @@ static DeclKind parseFunc()
     // Processa o corpo da função
    
     match(ABRECHAVE); // '{'
-    printf("\n\nProcessando um abre chaves no parse func, aqui o lexema é: %s\n\n", t.lexeme);
-
 
     // Processa declarações de variáveis locais
     while (t.type == INT_T || t.type == FLOAT_T || t.type == CHAR_T || t.type == BOOL_T)
