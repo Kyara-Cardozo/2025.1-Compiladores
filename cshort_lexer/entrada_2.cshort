@@ -1,0 +1,35 @@
+int resultado_global;
+char flag_pronto;
+
+int calcular_fatorial(int n) {
+    if (n == 0) {
+        return 1;
+    } else {
+        return n * calcular_fatorial(n - 1);
+    }
+}
+
+void main() {
+    int valores[10];
+    int i;
+    int x;
+    float limite;
+    
+    i = 0;
+    x = 5;
+    limite = 99.5;
+    resultado_global = 0;
+    
+    while (i < 10) {
+        valores[i] = i * 2;
+        i = i + 1;
+    }
+
+    if ( (valores[2] > 3 && x == 5) || !(limite < 100.0) ) {
+        resultado_global = calcular_fatorial(x);
+    } else {
+        resultado_global = -1;
+    }
+    
+    return;
+}

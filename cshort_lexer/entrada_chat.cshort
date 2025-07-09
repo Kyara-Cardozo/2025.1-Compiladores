@@ -1,0 +1,9 @@
+int a; 
+float b[10];
+char c;
+
+int soma(int x, int y) {
+    int resultado;
+    resultado = 5 + 3;
+    return resultado;
+}
