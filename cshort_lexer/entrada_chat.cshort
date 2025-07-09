@@ -2,8 +2,21 @@ int a;
 float b[10];
 char c;
 
-int soma(int x, int y) {
+int somaComParametros(int x, int y) {
     int resultado;
-    resultado = 5 + 3;
+    resultado = x + y;
     return resultado;
+}
+
+int somaSemparametros(){
+    int result;
+    result = 5 + 3;
+    return result;
+}
+
+void main(){
+    x = 3;
+    y = 5;
+
+    soma(x,y);
 }
