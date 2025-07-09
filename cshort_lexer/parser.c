@@ -151,11 +151,7 @@ static void parseFator()
             advanceToken();    
             parseTermo();
         }
-        else
-        {
-            advanceToken();
-            // parseCmd();
-        }
+
     }
     else if (t.type == INT || t.type == REAL || t.type == CHAR)
     {
