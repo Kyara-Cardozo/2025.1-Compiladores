@@ -151,11 +151,7 @@ static void parseFator()
             advanceToken();    
             parseTermo();
         }
-        else
-        {
-            advanceToken();
-            // parseCmd();
-        }
+
     }
     else if (t.type == INT || t.type == REAL || t.type == CHAR)
     {
@@ -223,6 +219,7 @@ static void parseExpr()
     parseExprSimp();
 
     if (t.type == IGUAL ||
+        t.type == IGUALDADE ||
         t.type == NEGACAO ||
         t.type == MENORQUE ||
         t.type == MAIORQUE ||
@@ -357,6 +354,18 @@ static void parseCmd()
         // Final de bloco - não é um comando, mas quem chamou vai lidar com isso.
         return;
     }
+   else if (t.type == ABRECHAVE)
+    {
+        // Bloco de comandos
+        advanceToken();
+
+        while (t.type != FECHACHAVE && t.type != TOKEN_EOF)
+        {
+            parseCmd();
+        }
+
+        match(FECHACHAVE);
+    }
     else
     {
         printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
@@ -477,7 +486,6 @@ static DeclKind decl()
         }
         else
         {
-            printf("\ncaiu aqui 1\n");
             printf("Erro de sintaxe na linha %d: esperado ';' após declaração de variável.\n", t.line);
             exit(1);
         }
@@ -555,6 +563,24 @@ static DeclKind parseFunc()
 
             if (t.type == VIRGULA) // ',' indica mais variáveis
             {
+                advanceToken();
+            }
+            else if (t.type == ABRECOLCHETE)
+            {
+                advanceToken();
+                if (t.type != INT)
+                {
+                    printf("Erro de sintaxe na linha %d: esperado constante inteira.\n", t.line);
+                    exit(0);
+                }
+                //TODO: inserir na tabela
+                // insertSymbol(nome, SYMBOL_VAR);
+                advanceToken();
+                if (t.type != FECHACOLCHETE)
+                {
+                    printf("Erro de sintaxe na linha %d: esperado ']'.\n", t.line);
+                    exit(0);
+                }
                 advanceToken();
             }
             else if (t.type != PONTOVIRGULA) // Erro se não for ',' ou ';'
