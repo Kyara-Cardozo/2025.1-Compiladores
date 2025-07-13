@@ -337,12 +337,7 @@ static void parseCmd()
         }
         else if (t.type == ABRECOLCHETE)
         {
-            // Atribuição envolvendo array: id '[' expr ']' '=' expr ';'
-            advanceToken();
-            parseExpr(); // Analisa a expressão dentro dos colchetes
-            match(FECHACOLCHETE);
-            match(IGUAL);
-            parseExpr(); // Analisa a expressão após o '='
+            parseAtrib();
             match(PONTOVIRGULA);
         }
         else if (t.type == IGUAL)
