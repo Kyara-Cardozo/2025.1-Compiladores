@@ -249,7 +249,7 @@ static void parseAtrib()
 
 static void parseCmd()
 {
-    
+
     if (t.type == IF)
     {
         // if '(' expr ')' cmd [ else cmd ]
@@ -385,9 +385,6 @@ static void parseCmd()
         exit(1);
     }
 }
-
-
-
 
 // <decl> ::= <tipo> ID ( ) | <tipo> ID ;
 static DeclKind decl()
