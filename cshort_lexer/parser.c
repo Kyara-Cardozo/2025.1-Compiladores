@@ -249,7 +249,7 @@ static void parseAtrib()
 
 static void parseCmd()
 {
-
+    
     if (t.type == IF)
     {
         // if '(' expr ')' cmd [ else cmd ]
@@ -308,11 +308,11 @@ static void parseCmd()
         {
             parseExpr(); // Expressão opcional
         }
+        // match(PONTOVIRGULA); TODO: testar
     }
     else if (t.type == ID) //existe uma ambiguidade, porque id pode ser também uma atribuição
     {
-        // id '(' [ expr { ',' expr } ] ')' ';' | atrib ';'
-       // Não consome antecipadamente; espere decidir o tipo de comando
+        // id '(' [ expr { ',' expr } ] ')' ';' | id '[' expr ']' '=' expr ';' | atrib ';'
         char nome[256];
         strcpy(nome, t.lexeme);
         advanceToken();
@@ -335,26 +335,39 @@ static void parseCmd()
             match(FECHAPARENTESE);
             match(PONTOVIRGULA);
         }
+        else if (t.type == ABRECOLCHETE)
+        {
+            // Atribuição envolvendo array: id '[' expr ']' '=' expr ';'
+            advanceToken();
+            parseExpr(); // Analisa a expressão dentro dos colchetes
+            match(FECHACOLCHETE);
+            match(IGUAL);
+            parseExpr(); // Analisa a expressão após o '='
+            match(PONTOVIRGULA);
+        }
         else if (t.type == IGUAL)
         {
-            // Atribuição
+            // Atribuição simples
             parseAtrib();
-
             match(PONTOVIRGULA);
+        }
+        else
+        {
+            printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
+            exit(1);
         }
     }
     else if (t.type == PONTOVIRGULA)
     {
         // Comando vazio
         advanceToken();
-
     }
     else if (t.type == FECHACHAVE || t.type == TOKEN_EOF)
     {
         // Final de bloco - não é um comando, mas quem chamou vai lidar com isso.
         return;
     }
-   else if (t.type == ABRECHAVE)
+    else if (t.type == ABRECHAVE)
     {
         // Bloco de comandos
         advanceToken();
@@ -371,7 +384,6 @@ static void parseCmd()
         printf("Erro de sintaxe na linha %d: comando inválido, encontrado '%s'\n", t.line, t.lexeme);
         exit(1);
     }
-    
 }
 
 
