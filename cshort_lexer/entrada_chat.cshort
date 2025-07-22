@@ -1,4 +1,4 @@
-int a; 
+int h; 
 float b[10];
 char c;
 

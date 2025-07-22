@@ -374,7 +374,7 @@ static DeclKind decl(const char *tipoAtual)
     // char tipoAtual[256];
     // strcpy(tipoAtual, t.lexeme); // Aqui t.lexeme ainda é "int", "void" etc.
     // advanceToken();
-    printf("DEBUG: Após tipo '%s', próximo token é '%s' (tipo: %d)\n", tipoAtual, t.lexeme, t.type);
+    // printf("DEBUG: Após tipo '%s', próximo token é '%s' (tipo: %d)\n", tipoAtual, t.lexeme, t.type);
 
     if (t.type != ID)
     {
@@ -403,7 +403,7 @@ static DeclKind decl(const char *tipoAtual)
                     exit(1);
                 }
 
-                insertSymbol(t.lexeme, "int", SYMBOL_PARAM, SCOPO_LOCAL, 1);
+                insertSymbol(t.lexeme, tipoAtual, SYMBOL_PARAM, SCOPO_LOCAL, 1);
                 advanceToken();
 
                 if (t.type == VIRGULA) // Se houver uma vírgula, avança para o próximo parâmetro
@@ -576,7 +576,6 @@ static DeclKind parseFunc()
             strcpy(tipoVar, "bool");
 
         advanceToken();
-        advanceToken();
 
         do
         {
@@ -590,7 +589,7 @@ static DeclKind parseFunc()
 
             if (t.type == VIRGULA) // ',' indica mais variáveis
             {
-                advanceToken();
+               match(PONTOVIRGULA);
             }
             else if (t.type != PONTOVIRGULA) // Erro se não for ',' ou ';'
             {
@@ -657,8 +656,7 @@ void parseProgram()
         //     printf("Erro de sintaxe: conteúdo inesperado após o fim do programa (linha %d).\n", t.line);
         //     exit(1);
         // }
-            printSymbolTable();
+ 
     }
-
-
+           printSymbolTable();
 }
