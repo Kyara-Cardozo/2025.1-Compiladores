@@ -1,0 +1,4 @@
+int resultado_global;
+int teste;
+
+resultado_global != teste;

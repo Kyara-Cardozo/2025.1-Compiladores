@@ -1,0 +1,17 @@
+int resultado_global;
+char flag_pronto;
+
+
+void main() {
+    int x;
+    int y;
+        
+    x = 0;
+    y = 1;
+   
+   if (x > 0) {
+    y = 1;
+    } else {
+        y = -1;
+    }
+}
