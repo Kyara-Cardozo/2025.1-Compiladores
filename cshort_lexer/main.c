@@ -59,7 +59,6 @@ int main() {
     
     // char fileName[200] = "entrada_2.cshort";
     // char fileName[200] = "entrada_chat.cshort";
-    // char fileName[200] = "teste.cshort";
 
     // char fileName[200] = "expressoes_aritmeticas.cshort"; //expressoes aritmeticas
     // char fileName[200] = "comando_while.cshort"; 
