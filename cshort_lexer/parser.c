@@ -19,6 +19,12 @@ void static parseCmd();
 DeclKind static parseFunc();
 static void parseTermo();
 
+static int labelCounter = 0;
+
+static int generateLabel()
+{
+    return labelCounter++;
+}
 
 // Função auxiliar para avançar o token
 static void match(TokenType expected)
@@ -114,6 +120,8 @@ static void parseFator()
     {
         char nome[256];
         strcpy(nome, t.lexeme);
+        printf("\n LOAD %s\n", t.lexeme);
+
         advanceToken();
 
         if (t.type == ABRECOLCHETE)
@@ -147,15 +155,28 @@ static void parseFator()
             // advanceToken();
 
         }
-        else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
-            advanceToken();    
-            parseTermo();
-        }
+        // else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
+            // if (t.type == MAIS)
+            // {
+            //     printf("\n ADD \n");
+            // }
+            // else if (t.type == MENOS)
+            // {
+            //     printf("\n SUB \n");
+            // }
+            // else if (t.type == OR)
+            // {
+            //     printf("\n OR \n");
+            // }
+            // advanceToken();
+            // parseTermo();
+        // }
 
     }
     else if (t.type == INT || t.type == REAL || t.type == CHAR)
     {
         // Constantes inteiras, reais ou caracteres
+        printf("PUSH %s\n", t.lexeme);
         advanceToken();
     }
     else if (t.type == ABREPARENTESE)
@@ -190,6 +211,19 @@ static void parseTermo()
 
     while (t.type == MUL || t.type == DIV || t.type == AND)
     {
+        if (t.type == MUL)
+        {
+            printf("\n MUL \n");
+        }
+        else if (t.type == DIV)
+        {
+            printf("\n DIV \n");
+        }
+        else if (t.type == AND)
+        {
+            printf("\n AND \n");
+        }
+
         advanceToken();
         parseFator();
     }
@@ -200,6 +234,12 @@ static void parseExprSimp()
 {
     if (t.type == MAIS || t.type == MENOS)
     {
+        if(t.type == MENOS){
+            printf("\n SUB \n");
+        }
+        else if(t.type == MAIS){
+            printf("\n ADD \n");
+        }
         advanceToken();
     }
 
@@ -207,6 +247,18 @@ static void parseExprSimp()
 
     while (t.type == MAIS || t.type == MENOS || t.type == OR)
     {
+        if (t.type == MAIS)
+        {
+            printf("\n ADD \n");
+        }
+        else if (t.type == MENOS)
+        {
+            printf("\n SUB \n");
+        }
+        else if (t.type == OR)
+        {
+            printf("\n OR \n");
+        }
         advanceToken();
 
         parseTermo();
@@ -255,24 +307,48 @@ static void parseCmd()
         // if '(' expr ')' cmd [ else cmd ]
         advanceToken();
         match(ABREPARENTESE);
+
+        int elseLabel = generateLabel();
+        int endLabel = generateLabel();
+
         parseExpr();
+        printf("GOFALSE L%d\n", endLabel);
+
         match(FECHAPARENTESE);
         parseCmd();
+        
+        printf("GOTO L%d\n", endLabel);
+        printf("LABEL L%d\n", elseLabel);
 
         if (t.type == ELSE)
         {
             advanceToken();
             parseCmd();
         }
+
+        printf("LABEL L%d\n", endLabel);
+
     }
     else if (t.type == WHILE)
     {
         // while '(' expr ')' cmd
         advanceToken();
         match(ABREPARENTESE);
+
+        int startLabel = generateLabel();
+        int endLabel = generateLabel();
+
+        printf("LABEL L%d\n", startLabel);
+
         parseExpr();
+
+        printf("GOFALSE L%d\n", endLabel);
+
         match(FECHAPARENTESE);
         parseCmd();
+
+        printf("GOTO L%d\n", startLabel);
+        printf("LABEL L%d\n", endLabel); 
     }
     else if (t.type == FOR)
     {
@@ -280,24 +356,37 @@ static void parseCmd()
         advanceToken();
         match(ABREPARENTESE);
 
+        int startLabel = generateLabel();
+        int endLabel = generateLabel();
+        int incrementLabel = generateLabel();
+
         if (t.type == ID)
         {
             parseAtrib(); // Atribuição opcional
         }
         match(PONTOVIRGULA);
+        printf("LABEL L%d\n", startLabel); // Marca o início da condição
+
 
         if (t.type != PONTOVIRGULA)
         {
             parseExpr(); // Expressão opcional
+            printf("GOFALSE L%d\n", endLabel); // Salta para o final se a condição for falsa
+
         }
         match(PONTOVIRGULA);
 
+        printf("LABEL L%d\n", incrementLabel); // Marca o início do incremento
         if (t.type == ID)
         {
             parseAtrib(); // Atribuição opcional
         }
         match(FECHAPARENTESE);
         parseCmd();
+        printf("GOTO L%d\n", startLabel); //volta para a condicão
+        printf("LABEL L%d\n", endLabel); //final do for
+
+
     }
     else if (t.type == RETURN)
     {

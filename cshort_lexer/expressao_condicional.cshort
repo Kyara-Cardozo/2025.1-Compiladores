@@ -1,0 +1,15 @@
+
+
+int x;
+int y;
+int z;
+
+void main(){
+    x = 5;
+    y = 3;
+
+
+    if (x == 0) {
+        z = 1;
+    }
+}
