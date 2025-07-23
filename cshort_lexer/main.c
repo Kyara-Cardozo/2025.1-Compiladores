@@ -58,12 +58,12 @@ int main() {
     // char fileName[200] = "entrada_completa_que_funciona.cshort";
     
     // char fileName[200] = "entrada_2.cshort";
-    // char fileName[200] = "entrada_chat.cshort";
+    char fileName[200] = "entrada_chat.cshort";
 
     // char fileName[200] = "expressoes_aritmeticas.cshort"; //expressoes aritmeticas
     // char fileName[200] = "comando_while.cshort"; 
     // char fileName[200] = "comando_if.cshort";
-    char fileName[200] = "expressao_condicional.cshort";
+    // char fileName[200] = "expressao_condicional.cshort";
 
 
     FILE *file = fopen(fileName, "r");
