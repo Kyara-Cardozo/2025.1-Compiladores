@@ -495,27 +495,27 @@ static void parseCmd()
             char nomeInc[256];
             strcpy(nomeInc, t.lexeme);
             advanceToken();
-            parseAtrib(nomeInc); // Atribuição opcional
+            parseAtrib(nomeInc); 
         }
         match(PONTOVIRGULA);
-        printf("LABEL L%d\n", startLabel); // Marca o início da condição
+        printf("LABEL L%d\n", startLabel); 
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr();                       // Expressão opcional
-            printf("GOFALSE L%d\n", endLabel); // Salta para o final se a condição for falsa
+            parseExpr();                      
+            printf("GOFALSE L%d\n", endLabel); 
         }
         match(PONTOVIRGULA);
 
-        printf("LABEL L%d\n", incrementLabel); // Marca o início do incremento
+        printf("LABEL L%d\n", incrementLabel); 
         if (t.type == ID)
         {
-            parseAtrib(nomeFor); // Atribuição opcional
+            parseAtrib(nomeFor); 
         }
         match(FECHAPARENTESE);
         parseCmd();
-        printf("GOTO L%d\n", startLabel); // volta para a condicão
-        printf("LABEL L%d\n", endLabel);  // final do for
+        printf("GOTO L%d\n", startLabel); 
+        printf("LABEL L%d\n", endLabel); 
     }
     else if (t.type == RETURN)
     {
@@ -524,7 +524,7 @@ static void parseCmd()
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr(); // Expressão opcional
+            parseExpr(); 
             printf("RET\n");
         }
         // match(PONTOVIRGULA); TODO: testar
