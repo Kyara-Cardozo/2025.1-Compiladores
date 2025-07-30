@@ -14,11 +14,13 @@ typedef enum
     DECL_PROT_UNICO
 } DeclKind;
 
-void static parseExpr();
+static Tipo parseExpr();
 void static parseCmd();
 DeclKind static parseFunc();
-static void parseTermo();
+static Tipo parseTermo();
+static Tipo parseFator();
 
+int saoCompativeis(Tipo t1, Tipo t2);
 static int labelCounter = 0;
 
 static int generateLabel()
@@ -114,97 +116,97 @@ static void parseExpressao()
     }
 }
 
-static void parseFator()
-{
-    if (t.type == ID)
-    {
-        char nome[256];
-        strcpy(nome, t.lexeme);
-        printf("\n LOAD %s\n", t.lexeme);
+// static void parseFator()
+// {
+//     if (t.type == ID)
+//     {
+//         char nome[256];
+//         strcpy(nome, t.lexeme);
+//         printf("\n LOAD %s\n", t.lexeme);
 
-        advanceToken();
+//         advanceToken();
 
-        if (t.type == ABRECOLCHETE)
-        {
-            // Vetor: id [ expr ]
-            advanceToken();
-            parseExpr();
-            match(FECHACOLCHETE);
-        }
-        else if (t.type == ABREPARENTESE)
-        {
-            // Chamada de função: id ( [expr {, expr}] )
-            advanceToken();
+//         if (t.type == ABRECOLCHETE)
+//         {
+//             // Vetor: id [ expr ]
+//             advanceToken();
+//             parseExpr();
+//             match(FECHACOLCHETE);
+//         }
+//         else if (t.type == ABREPARENTESE)
+//         {
+//             // Chamada de função: id ( [expr {, expr}] )
+//             advanceToken();
 
-            if (t.type != FECHAPARENTESE)
-            {
-                parseExpr();
+//             if (t.type != FECHAPARENTESE)
+//             {
+//                 parseExpr();
 
-                while (t.type == VIRGULA)
-                {
-                    advanceToken();
-                    parseExpr();
-                }
-            }
+//                 while (t.type == VIRGULA)
+//                 {
+//                     advanceToken();
+//                     parseExpr();
+//                 }
+//             }
 
-            match(FECHAPARENTESE);
-        }
-        else if (t.type == PONTOVIRGULA)
-        {
-            // Atribuição ou comando vazio
-            // advanceToken();
-        }
-        // else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
-        // if (t.type == MAIS)
-        // {
-        //     printf("\n ADD \n");
-        // }
-        // else if (t.type == MENOS)
-        // {
-        //     printf("\n SUB \n");
-        // }
-        // else if (t.type == OR)
-        // {
-        //     printf("\n OR \n");
-        // }
-        // advanceToken();
-        // parseTermo();
-        // }
-    }
-    else if (t.type == INT || t.type == REAL || t.type == CHAR)
-    {
-        // Constantes inteiras, reais ou caracteres
-        printf("PUSH %s\n", t.lexeme);
-        advanceToken();
-    }
-    else if (t.type == ABREPARENTESE)
-    {
-        // Expressão entre parênteses: ( expr )
-        advanceToken();
-        parseExpr();
-        match(FECHAPARENTESE);
-    }
-    else if (t.type == NOT)
-    {
-        // Negação: ! fator
-        advanceToken();
-        parseFator();
-    }
-    else if (t.type == PONTOVIRGULA)
-    {
-        advanceToken();
-    }
+//             match(FECHAPARENTESE);
+//         }
+//         else if (t.type == PONTOVIRGULA)
+//         {
+//             // Atribuição ou comando vazio
+//             // advanceToken();
+//         }
+//         // else if(t.type == MAIS || t.type == MENOS || t.type == OR) {
+//         // if (t.type == MAIS)
+//         // {
+//         //     printf("\n ADD \n");
+//         // }
+//         // else if (t.type == MENOS)
+//         // {
+//         //     printf("\n SUB \n");
+//         // }
+//         // else if (t.type == OR)
+//         // {
+//         //     printf("\n OR \n");
+//         // }
+//         // advanceToken();
+//         // parseTermo();
+//         // }
+//     }
+//     else if (t.type == INT || t.type == REAL || t.type == CHAR)
+//     {
+//         // Constantes inteiras, reais ou caracteres
+//         printf("PUSH %s\n", t.lexeme);
+//         advanceToken();
+//     }
+//     else if (t.type == ABREPARENTESE)
+//     {
+//         // Expressão entre parênteses: ( expr )
+//         advanceToken();
+//         parseExpr();
+//         match(FECHAPARENTESE);
+//     }
+//     else if (t.type == NOT)
+//     {
+//         // Negação: ! fator
+//         advanceToken();
+//         parseFator();
+//     }
+//     else if (t.type == PONTOVIRGULA)
+//     {
+//         advanceToken();
+//     }
 
-    else
-    {
-        // Erro de sintaxe para fatores inválidos
-        printf("Erro de sintaxe na linha %d: fator inesperado: '%s'\n", t.line, t.lexeme);
-        exit(1);
-    }
-}
+//     else
+//     {
+//         // Erro de sintaxe para fatores inválidos
+//         printf("Erro de sintaxe na linha %d: fator inesperado: '%s'\n", t.line, t.lexeme);
+//         exit(1);
+//     }
+// }
 
 // <termo> ::= fator {(* | / | &&) fator};
-static void parseTermo()
+static Tipo parseTermo()
 {
     parseFator();
 
@@ -228,9 +230,89 @@ static void parseTermo()
     }
 }
 
-// <expreSimp> ::= [+ | – ] termo {(+ | – | ||) termo};
-static void parseExprSimp()
+static Tipo parseFator()
 {
+    Tipo tipo = TIPO_INDEFINIDO;
+
+    if (t.type == ID)
+    {
+        char nome[256];
+        strcpy(nome, t.lexeme);
+        printf("LOAD %s\n", t.lexeme);
+
+        tipo = getTipo(nome);
+
+        advanceToken();
+
+        if (t.type == ABRECOLCHETE)
+        {
+            advanceToken();
+            tipo = parseExpr();
+            match(FECHACOLCHETE);
+        }
+        else if (t.type == ABREPARENTESE)
+        {
+            advanceToken();
+            if (t.type != FECHAPARENTESE)
+            {
+                tipo = parseExpr();
+                while (t.type == VIRGULA)
+                {
+                    advanceToken();
+                    tipo = parseExpr();
+                }
+            }
+            match(FECHAPARENTESE);
+        }
+    }
+    else if (t.type == INT)
+    {
+        printf("PUSH %s\n", t.lexeme);
+        tipo = TIPO_INT;
+        advanceToken();
+    }
+    else if (t.type == REAL)
+    {
+        printf("PUSH %s\n", t.lexeme);
+        tipo = TIPO_FLOAT;
+        advanceToken();
+    }
+    else if (t.type == CHAR)
+    {
+        printf("PUSH %s\n", t.lexeme);
+        tipo = TIPO_CHAR;
+        advanceToken();
+    }
+    else if (t.type == ABREPARENTESE)
+    {
+        advanceToken();
+        tipo = parseExpr();
+        match(FECHAPARENTESE);
+    }
+    else if (t.type == NOT)
+    {
+        advanceToken();
+        tipo = parseFator(); // Espera-se bool
+        if (tipo != TIPO_BOOL)
+        {
+            printf("Erro semântico: operador '!' requer expressão booleana.\n");
+            exit(1);
+        }
+        tipo = TIPO_BOOL;
+    }
+    else
+    {
+        printf("Erro de sintaxe na linha %d: fator inesperado: '%s'\n", t.line, t.lexeme);
+        exit(1);
+    }
+
+    return tipo;
+}
+
+// <expreSimp> ::= [+ | – ] termo {(+ | – | ||) termo};
+static Tipo parseExprSimp()
+{
+    Tipo tipo = TIPO_INDEFINIDO;
     if (t.type == MAIS || t.type == MENOS)
     {
         if (t.type == MENOS)
@@ -244,7 +326,7 @@ static void parseExprSimp()
         advanceToken();
     }
 
-    parseTermo();
+    tipo = parseTermo();
 
     while (t.type == MAIS || t.type == MENOS || t.type == OR)
     {
@@ -267,9 +349,9 @@ static void parseExprSimp()
 }
 
 // <expre> ::= expr_simp [ op_rel expr_simp ];
-static void parseExpr()
+static Tipo parseExpr()
 {
-    parseExprSimp();
+    Tipo tipoEsq = parseExprSimp();
 
     if (t.type == IGUAL ||
         t.type == IGUALDADE ||
@@ -279,25 +361,70 @@ static void parseExpr()
         t.type == MENORouIGUAL ||
         t.type == MAIORouIGUAL)
     {
+        TokenType op = t.type;
         advanceToken();
-        parseExprSimp();
+        Tipo tipoDir = parseExprSimp();
+        switch (op)
+        {
+        case IGUALDADE:
+            printf("EQ\n");
+            break;
+        case NEGACAO:
+            printf("NE\n");
+            break;
+        case MENORQUE:
+            printf("LT\n");
+            break;
+        case MAIORQUE:
+            printf("GT\n");
+            break;
+        case MENORouIGUAL:
+            printf("LE\n");
+            break;
+        case MAIORouIGUAL:
+            printf("GE\n");
+            break;
+        default:
+            break;
+        }
+        if (!saoCompativeis(tipoEsq, tipoDir))
+        {
+            printf("Erro semântico: tipos incompatíveis em comparação.\n");
+            exit(1);
+        }
+
+        printf("// operação relacional: %d\n", op);
+        return TIPO_BOOL;
     }
+
+    return tipoEsq;
 }
 
 // <atrib> ::= id [ '[' expr ']' ] = expr
 
-static void parseAtrib()
+static void parseAtrib(char *nomeVariavel)
 {
+    Tipo tipoVar = getTipo(nomeVariavel);
+    // char nomeVariavel[256];
+    // strcpy(nomeVariavel, t.lexeme);
+    // advanceToken();
+
     if (t.type == ABRECOLCHETE)
     {
+        printf("// acesso a vetor (indice) - opcional\n");
         advanceToken();
         parseExpr();
         match(FECHACOLCHETE);
     }
 
     match(IGUAL);
-
-    parseExpr();
+    Tipo tipoExpr = parseExpr();
+    if (!saoCompativeis(tipoVar, tipoExpr))
+    {
+        printf("Erro semântico: tipos incompatíveis na atribuição de '%s'.\n", nomeVariavel);
+        exit(1);
+    }
+    printf("STORE %s\n", nomeVariavel);
 }
 
 static void parseCmd()
@@ -311,7 +438,7 @@ static void parseCmd()
 
         int elseLabel = generateLabel();
         int endLabel = generateLabel();
-
+        // esquema traducao
         parseExpr();
         printf("GOFALSE L%d\n", endLabel);
 
@@ -353,6 +480,9 @@ static void parseCmd()
     else if (t.type == FOR)
     {
         // for '(' [ atrib ] ';' [ expr ] ';' [ atrib ] ')' cmd
+        char nomeFor[256];
+        strcpy(nomeFor, t.lexeme);
+
         advanceToken();
         match(ABREPARENTESE);
 
@@ -362,27 +492,30 @@ static void parseCmd()
 
         if (t.type == ID)
         {
-            parseAtrib(); // Atribuição opcional
+            char nomeInc[256];
+            strcpy(nomeInc, t.lexeme);
+            advanceToken();
+            parseAtrib(nomeInc); 
         }
         match(PONTOVIRGULA);
-        printf("LABEL L%d\n", startLabel); // Marca o início da condição
+        printf("LABEL L%d\n", startLabel); 
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr();                       // Expressão opcional
-            printf("GOFALSE L%d\n", endLabel); // Salta para o final se a condição for falsa
+            parseExpr();                      
+            printf("GOFALSE L%d\n", endLabel); 
         }
         match(PONTOVIRGULA);
 
-        printf("LABEL L%d\n", incrementLabel); // Marca o início do incremento
+        printf("LABEL L%d\n", incrementLabel); 
         if (t.type == ID)
         {
-            parseAtrib(); // Atribuição opcional
+            parseAtrib(nomeFor); 
         }
         match(FECHAPARENTESE);
         parseCmd();
-        printf("GOTO L%d\n", startLabel); // volta para a condicão
-        printf("LABEL L%d\n", endLabel);  // final do for
+        printf("GOTO L%d\n", startLabel); 
+        printf("LABEL L%d\n", endLabel); 
     }
     else if (t.type == RETURN)
     {
@@ -391,7 +524,8 @@ static void parseCmd()
 
         if (t.type != PONTOVIRGULA)
         {
-            parseExpr(); // Expressão opcional
+            parseExpr(); 
+            printf("RET\n");
         }
         // match(PONTOVIRGULA); TODO: testar
     }
@@ -406,6 +540,7 @@ static void parseCmd()
         {
             // Chamada de função
             advanceToken();
+            printf("CALL %s\n", nome);
 
             if (t.type != FECHAPARENTESE)
             {
@@ -422,13 +557,13 @@ static void parseCmd()
         }
         else if (t.type == ABRECOLCHETE)
         {
-            parseAtrib();
+            parseAtrib(nome);
             match(PONTOVIRGULA);
         }
         else if (t.type == IGUAL)
         {
             // Atribuição simples
-            parseAtrib();
+            parseAtrib(nome);
             match(PONTOVIRGULA);
         }
         else
@@ -538,15 +673,15 @@ static DeclKind decl(const char *tipoAtual)
         if (t.type != INT)
 
         {
-           printf("aquiiii Antes %s\n", nome);
+            printf("aquiiii Antes %s\n", nome);
             printf("Erro de sintaxe na linha %d: esperado constante inteira.\n", t.line);
             exit(0);
         }
         // insertSymbol(nome, tipoAtual, SYMBOL_VAR, SCOPO_GLOBAL, 0);
         // printf("aquiiii  Depois%s\n", nome);
-     
+
         int tamanho = atoi(t.lexeme);
-           advanceToken();
+        advanceToken();
         if (t.type != FECHACOLCHETE)
         {
             printf("Erro de sintaxe na linha %d: esperado ']'.\n", t.line);
@@ -773,4 +908,9 @@ void parseProgram()
     }
 
     printSymbolTable();
+}
+
+int saoCompativeis(Tipo t1, Tipo t2)
+{
+    return t1 == t2;
 }

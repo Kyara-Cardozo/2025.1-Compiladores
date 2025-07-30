@@ -95,3 +95,19 @@ void printSymbolTable() {
     }
     printf("==================================\n");
 }
+
+Tipo getTipo(const char *nome) {
+    Symbol *sym = lookupSymbol(nome, SCOPO_LOCAL);
+    if (!sym) sym = lookupSymbol(nome, SCOPO_GLOBAL);
+    if (!sym) {
+        printf("Erro semântico: identificador '%s' não declarado.\n", nome);
+        exit(1);
+    }
+    // Converte string para enum Tipo
+    if (strcmp(sym->type, "int") == 0) return TIPO_INT;
+    if (strcmp(sym->type, "float") == 0) return TIPO_FLOAT;
+    if (strcmp(sym->type, "char") == 0) return TIPO_CHAR;
+    if (strcmp(sym->type, "bool") == 0) return TIPO_BOOL;
+    if (strcmp(sym->type, "void") == 0) return TIPO_VOID;
+    return TIPO_INDEFINIDO;
+}

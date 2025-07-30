@@ -22,6 +22,16 @@ typedef enum
     ESTADO_ZOMBIE
 } SymbolState;
 
+typedef enum {
+    TIPO_INT,
+    TIPO_FLOAT,
+    TIPO_CHAR,
+    TIPO_BOOL,
+    TIPO_VOID,
+    TIPO_INDEFINIDO
+} Tipo;
+
+Tipo getTipo(const char *nome);
 // Estrutura de um símbolo
 typedef struct Symbol
 {
